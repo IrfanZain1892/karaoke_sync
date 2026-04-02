@@ -79,10 +79,11 @@ body::after { content: ''; position: fixed; inset: 0; z-index: 0; background-ima
 
 .listen-hint   { font-size: 13px; color: var(--muted); font-family: var(--mono); }
 .spacebar-hint { font-size: 11px; color: rgba(240,240,248,0.2); font-family: var(--mono); }
-.reidentify-bar { display: none; align-items: center; gap: 8px; font-size: 11px; font-family: var(--mono); color: var(--muted); }
-.reidentify-bar.visible { display: flex; }
-.reidentify-progress { width: 100px; height: 2px; background: var(--border); border-radius: 2px; overflow: hidden; }
+.reidentify-bar { display: none; align-items: center; gap: 8px; font-size: 11px; font-family: var(--mono); color: var(--muted); background: var(--card); border: 0.5px solid var(--border); border-radius: 20px; padding: 5px 14px; }
+.reidentify-bar.visible { display: flex; animation: fadeDown 0.2s ease; }
+.reidentify-progress { width: 80px; height: 3px; background: var(--border); border-radius: 2px; overflow: hidden; }
 .reidentify-fill { height: 100%; background: var(--accent2); width: 0%; transition: width 1s linear; }
+#reidentifyCountdown { color: var(--accent2); font-weight: 700; min-width: 24px; }
 
 /* ── Spinner ── */
 .spinner { display: none; margin: 1.5rem auto; width: 26px; height: 26px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; }
@@ -139,7 +140,7 @@ body::after { content: ''; position: fixed; inset: 0; z-index: 0; background-ima
 .lyric-stage { min-height: 300px; max-height: 400px; background: var(--surface); border: 0.5px solid var(--border); border-radius: 22px; padding: 0; position: relative; display: none; transition: border-color 0.3s, background 0.4s; }
 .lyric-stage.visible { display: block; animation: fadeDown 0.3s ease; }
 .lyric-stage.paused  { border-color: rgba(123,97,255,0.4); }
-.lyric-scroll-area { height: 400px; overflow-y: auto; padding: 2.5rem 1.75rem 2rem; scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.07) transparent; -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 10%, black 90%, transparent 100%); mask-image: linear-gradient(to bottom, transparent 0%, black 10%, black 90%, transparent 100%); }
+.lyric-scroll-area { height: 400px; overflow-y: auto; padding: 2.5rem 1.75rem 2rem; scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.07) transparent; -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 10%, black 90%, transparent 100%); mask-image: linear-gradient(to bottom, transparent 0%, black 10%, black 90%, transparent 100%); -webkit-overflow-scrolling: touch; touch-action: pan-y; }
 .lyric-scroll-area::-webkit-scrollbar { width: 4px; }
 .lyric-scroll-area::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.07); border-radius: 4px; }
 
@@ -191,10 +192,11 @@ body::after { content: ''; position: fixed; inset: 0; z-index: 0; background-ima
 .fav-action-btn { flex: 1; font-size: 11px; font-family: var(--mono); background: var(--card); border: 0.5px solid var(--border); border-radius: 8px; padding: 6px; cursor: pointer; color: var(--muted); transition: all 0.15s; text-align: center; }
 .fav-action-btn:hover { border-color: var(--accent); color: var(--accent); }
 
-/* ── Keyboard hints ── */
-.keyboard-hint { margin-top: 1.25rem; padding: 10px 14px; background: var(--card); border: 0.5px solid var(--border); border-radius: 12px; display: flex; gap: 16px; flex-wrap: wrap; }
-.key-item { font-size: 11px; font-family: var(--mono); color: var(--muted); display: flex; align-items: center; gap: 6px; }
-.key { background: var(--surface); border: 0.5px solid var(--border); border-radius: 5px; padding: 2px 7px; color: rgba(240,240,248,0.55); font-size: 11px; }
+/* ── Keyboard / action hints ── */
+.keyboard-hint { margin-top: 1.25rem; padding: 10px 14px; background: var(--card); border: 0.5px solid var(--border); border-radius: 12px; display: flex; gap: 8px; flex-wrap: wrap; }
+.key-item { font-size: 11px; font-family: var(--mono); color: var(--muted); display: flex; align-items: center; gap: 6px; background: var(--surface); border: 0.5px solid var(--border); border-radius: 8px; padding: 6px 10px; cursor: pointer; transition: all 0.15s; user-select: none; -webkit-tap-highlight-color: transparent; }
+.key-item:hover, .key-item:active { border-color: var(--accent); color: var(--accent); background: var(--glow-accent); }
+.key { background: rgba(255,255,255,0.06); border: 0.5px solid var(--border); border-radius: 5px; padding: 2px 7px; color: rgba(240,240,248,0.55); font-size: 11px; }
 
 /* ── Debug panel ── */
 .debug-panel { display: none; margin-top: 1.5rem; background: rgba(10,10,20,0.9); border: 0.5px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 12px 14px; font-family: var(--mono); font-size: 11px; animation: fadeDown 0.2s ease; }
@@ -218,6 +220,17 @@ body::after { content: ''; position: fixed; inset: 0; z-index: 0; background-ima
 .fs-hint { position: fixed; bottom: 1.5rem; right: 1.5rem; font-size: 11px; font-family: var(--mono); color: var(--muted); }
 .fs-progress { position: fixed; bottom: 0; left: 0; right: 0; height: 3px; background: var(--border); }
 .fs-progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent2), var(--accent)); width: 0%; transition: width 0.3s linear; }
+/* ── Mobile ── */
+@media (max-width: 600px) {
+  .app { padding: 1.25rem 1rem 5rem; }
+  .lyric-line { font-size: 17px; }
+  .lyric-line.active { font-size: 20px; }
+  .lyric-line.next { font-size: 15px; }
+  .manual-row { flex-direction: column; }
+  .manual-input { min-width: unset; }
+  .keyboard-hint { gap: 6px; }
+  .key-item { padding: 8px 12px; font-size: 12px; }
+}
 </style>
 </head>
 <body>
@@ -278,7 +291,7 @@ body::after { content: ''; position: fixed; inset: 0; z-index: 0; background-ima
     <div class="reidentify-bar" id="reidentifyBar">
       <span>re-id in</span>
       <div class="reidentify-progress"><div class="reidentify-fill" id="reidentifyFill"></div></div>
-      <span id="reidentifyCountdown">5s</span>
+      <span id="reidentifyCountdown">15s</span>
     </div>
   </div>
 
@@ -362,14 +375,15 @@ body::after { content: ''; position: fixed; inset: 0; z-index: 0; background-ima
     </div>
   </div>
 
-  <!-- Keyboard hints -->
+  <!-- Action hints / mobile buttons -->
   <div class="keyboard-hint">
-    <div class="key-item"><span class="key">space</span> pause</div>
-    <div class="key-item"><span class="key">F</span> fullscreen</div>
-    <div class="key-item"><span class="key">← →</span> offset</div>
-    <div class="key-item"><span class="key">R</span> re-identify</div>
-    <div class="key-item"><span class="key">D</span> debug</div>
-    <div class="key-item"><span class="key">click lyric</span> jump to line</div>
+    <div class="key-item" onclick="togglePause()" title="Pause/Resume"><span class="key">space</span> pause</div>
+    <div class="key-item" onclick="enterFullscreen()" title="Fullscreen"><span class="key">F</span> fullscreen</div>
+    <div class="key-item" onclick="adjustOffset(-1)" title="Offset -1s"><span class="key">←</span> -1s</div>
+    <div class="key-item" onclick="adjustOffset(1)" title="Offset +1s"><span class="key">→</span> +1s</div>
+    <div class="key-item" onclick="if(isListening && mediaStream) captureAndIdentify()" title="Re-identify"><span class="key">R</span> re-identify</div>
+    <div class="key-item" onclick="$('debugPanel').classList.toggle('visible')" title="Debug log"><span class="key">D</span> debug</div>
+    <div class="key-item" style="opacity:0.5;cursor:default"><span class="key">tap lyric</span> jump to line</div>
   </div>
 
   <!-- Debug panel -->
@@ -389,7 +403,7 @@ const CFG = {
   ACR_SECRET : 'suTpTNnI3mC7z0Ui19YuYnnNIWk5C7flxJBb5heS',
   ACR_HOST   : 'identify-ap-southeast-1.acrcloud.com',
   REID_SECS  : 5,
-  CAPTURE_MS : 5000,
+  CAPTURE_MS : 3000,
 };
 
 /* ── State ── */
@@ -543,19 +557,28 @@ function stopListening() {
 }
 
 /* ── Record + identify ── */
+function getSupportedMimeType() {
+  const types = ['audio/webm;codecs=opus','audio/webm','audio/ogg;codecs=opus','audio/ogg','audio/mp4'];
+  for (const t of types) { if (MediaRecorder.isTypeSupported(t)) return t; }
+  return '';
+}
+
 async function captureAndIdentify() {
   if (!mediaStream) return;
   dbg(`🔴 recording ${CFG.CAPTURE_MS / 1000}s...`);
   return new Promise(resolve => {
     const chunks = []; const t0 = Date.now();
-    const rec = new MediaRecorder(mediaStream);
-    rec.ondataavailable = e => chunks.push(e.data);
+    const mimeType = getSupportedMimeType();
+    const rec = mimeType ? new MediaRecorder(mediaStream, { mimeType }) : new MediaRecorder(mediaStream);
+    const usedMime = rec.mimeType || mimeType || 'audio/webm';
+    dbg(`🎙 format: ${usedMime}`);
+    rec.ondataavailable = e => { if (e.data.size > 0) chunks.push(e.data); };
     rec.onstop = async () => {
       dbg('⏹ done, sending to ACR...');
-      await identifyWithACR(new Blob(chunks, { type: 'audio/wav' }), Date.now() - t0);
+      await identifyWithACR(new Blob(chunks, { type: usedMime }), Date.now() - t0);
       resolve();
     };
-    rec.start();
+    rec.start(100);
     setTimeout(() => { if (rec.state !== 'inactive') rec.stop(); }, CFG.CAPTURE_MS);
   });
 }
@@ -604,7 +627,7 @@ async function identifyWithACR(blob, captureMs) {
       const isNew = norm(title) !== norm(curTitle) || norm(artist) !== norm(curArtist);
       curTitle = title; curArtist = artist;
       if (isNew) {
-        manualOffset = 0; $('offsetLabel').textContent = 'offset 0s';
+        manualOffset = -2; $('offsetLabel').textContent = 'offset 0s';
         translatedData = {}; currentLang = 'original';
         updateLangBtns();
         await fetchLyrics(artist, title, offsetSec);
@@ -624,6 +647,52 @@ async function identifyWithACR(blob, captureMs) {
 }
 
 /* ── Lyrics ── */
+
+// Generate query variants: strip version tags, try artist-only search, cover fallbacks
+function buildLyricQueries(artist, title) {
+  const queries = [];
+  // 1. Exact match
+  queries.push({ artist, title });
+
+  // 2. Strip version/cover tags from title e.g. "(versi metalcore)", "[reggae cover]", "- acoustic"
+  const stripped = title
+    .replace(/\s*[\(\[【][^\)\]】]*[\)\]】]/g, '')  // remove anything in brackets
+    .replace(/\s*[-–]\s*(versi|version|ver\.?|cover|acoustic|live|remix|remaster|ost|feat\.?|ft\.?)[^\n]*/gi, '')
+    .replace(/\s+/g, ' ').trim();
+  if (stripped && stripped.toLowerCase() !== title.toLowerCase()) {
+    queries.push({ artist, title: stripped });
+  }
+
+  // 3. Search-based: lrclib search API (returns array, pick best synced match)
+  queries.push({ search: true, artist, title: stripped || title });
+  queries.push({ search: true, artist: '', title: stripped || title });
+
+  // 4. Original title with search (catches covers/versions by different artists)
+  if (stripped !== title) queries.push({ search: true, artist: '', title });
+
+  return queries;
+}
+
+async function tryFetchLrclib(q) {
+  if (q.search) {
+    // Use lrclib search endpoint
+    const params = new URLSearchParams({ q: `${q.artist ? q.artist + ' ' : ''}${q.title}`.trim() });
+    const res = await fetch(`https://lrclib.net/api/search?${params}`);
+    if (!res.ok) return null;
+    const arr = await res.json();
+    if (!Array.isArray(arr) || !arr.length) return null;
+    // Prefer synced lyrics first
+    const synced = arr.find(x => x.syncedLyrics);
+    const plain  = arr.find(x => x.plainLyrics);
+    return synced || plain || null;
+  } else {
+    const url = `https://lrclib.net/api/get?artist_name=${encodeURIComponent(q.artist)}&track_name=${encodeURIComponent(q.title)}`;
+    const res = await fetch(url);
+    if (res.status === 404 || !res.ok) return null;
+    return await res.json();
+  }
+}
+
 async function fetchLyrics(artist, title, offsetSec) {
   $('noLyrics').classList.remove('visible');
   $('lyricStage').classList.remove('visible');
@@ -633,33 +702,49 @@ async function fetchLyrics(artist, title, offsetSec) {
   $('jumpBtn').classList.remove('visible');
   if (lyricTimer) clearInterval(lyricTimer);
   lyricData = []; activeIdx = -1; scrollListenerAttached = false;
-  try {
-    setStatus('found', 'fetching lyrics');
-    const url = `https://lrclib.net/api/get?artist_name=${encodeURIComponent(artist)}&track_name=${encodeURIComponent(title)}`;
-    dbg(`📝 fetching: ${artist} — ${title}`);
-    const res = await fetch(url);
-    if (res.status === 404) throw Object.assign(new Error('not found'), { notFound: true });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const data = await res.json();
-    dbg(`📝 lyrics: ${data.syncedLyrics ? 'synced ✓' : data.plainLyrics ? 'plain only' : 'none'}`, data.syncedLyrics ? '#c8f135' : '#ff4f6d');
-    if (data.syncedLyrics) {
-      parseLRC(data.syncedLyrics, data.duration || 0);
-      buildLyricDOM();
-      startKaraoke(offsetSec);
-      setStatus('found', 'playing');
-      $('offsetRow').classList.add('visible');
-      $('langStrip').classList.add('visible');
-    } else if (data.plainLyrics) {
-      showPlainLyrics(data.plainLyrics);
-      setStatus('found', 'lyrics (no sync)');
-    } else {
-      $('noLyrics').classList.add('visible');
-      setStatus('found', 'no lyrics');
+
+  setStatus('found', 'fetching lyrics');
+  const queries = buildLyricQueries(artist, title);
+  let data = null;
+
+  for (const q of queries) {
+    const label = q.search
+      ? `🔍 search: "${q.artist ? q.artist+' – ' : ''}${q.title}"`
+      : `📝 get: ${q.artist} — ${q.title}`;
+    dbg(label);
+    try {
+      const result = await tryFetchLrclib(q);
+      if (result && (result.syncedLyrics || result.plainLyrics)) {
+        data = result;
+        dbg(`✅ found via ${q.search ? 'search' : 'get'}: "${result.trackName || q.title}"`, '#c8f135');
+        break;
+      }
+    } catch(e) {
+      dbg(`⚠️ query failed: ${e.message}`, '#ff4f6d');
     }
-  } catch(e) {
+  }
+
+  if (!data) {
     $('noLyrics').classList.add('visible');
     setStatus('found', 'no lyrics');
-    dbg(`⚠️ fetchLyrics: ${e.message}`, '#ff4f6d');
+    dbg('❌ no lyrics found after all attempts', '#ff4f6d');
+    return;
+  }
+
+  dbg(`📝 lyrics: ${data.syncedLyrics ? 'synced ✓' : 'plain only'}`, data.syncedLyrics ? '#c8f135' : '#ff9900');
+  if (data.syncedLyrics) {
+    parseLRC(data.syncedLyrics, data.duration || 0);
+    buildLyricDOM();
+    startKaraoke(offsetSec);
+    setStatus('found', 'playing');
+    $('offsetRow').classList.add('visible');
+    $('langStrip').classList.add('visible');
+  } else if (data.plainLyrics) {
+    showPlainLyrics(data.plainLyrics);
+    setStatus('found', 'lyrics (no sync)');
+  } else {
+    $('noLyrics').classList.add('visible');
+    setStatus('found', 'no lyrics');
   }
 }
 
