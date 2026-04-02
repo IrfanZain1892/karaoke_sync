@@ -604,7 +604,7 @@ async function identifyWithACR(blob, captureMs) {
       const isNew = norm(title) !== norm(curTitle) || norm(artist) !== norm(curArtist);
       curTitle = title; curArtist = artist;
       if (isNew) {
-        manualOffset = -2; $('offsetLabel').textContent = 'offset 0s';
+        manualOffset = 0; $('offsetLabel').textContent = 'offset 0s';
         translatedData = {}; currentLang = 'original';
         updateLangBtns();
         await fetchLyrics(artist, title, offsetSec);
