@@ -209,19 +209,106 @@ body::after { content: ''; position: fixed; inset: 0; z-index: 0; background-ima
 #debugLog { color: rgba(255,255,255,0.4); line-height: 1.8; max-height: 160px; overflow-y: auto; word-break: break-all; }
 
 /* ── Fullscreen Karaoke ── */
-.fullscreen-overlay { display: none; position: fixed; inset: 0; z-index: 2000; background: var(--bg); flex-direction: column; align-items: center; justify-content: center; padding: 3rem; cursor: pointer; }
+.fullscreen-overlay {
+  display: none; position: fixed; inset: 0; z-index: 2000;
+  background: var(--bg); flex-direction: column;
+  align-items: center; justify-content: flex-start;
+  cursor: pointer; overflow: hidden;
+}
 .fullscreen-overlay.active { display: flex; }
-.fs-song-info { text-align: center; margin-bottom: 2rem; }
-.fs-title { font-size: clamp(18px, 4vw, 32px); font-weight: 800; color: var(--text); }
-.fs-artist { font-size: clamp(12px, 2.5vw, 18px); font-family: var(--mono); color: var(--muted); margin-top: 6px; }
-.fs-lyrics { width: 100%; max-width: 800px; text-align: center; }
-.fs-prev { font-size: clamp(14px, 2.5vw, 20px); color: var(--muted); margin-bottom: 1rem; transition: all 0.3s; }
-.fs-active { font-size: clamp(24px, 5vw, 52px); font-weight: 800; color: var(--accent); text-shadow: var(--lyric-active-shadow); transition: all 0.3s; min-height: 1.4em; }
-.fs-next { font-size: clamp(14px, 2.5vw, 22px); color: rgba(240,240,248,0.4); margin-top: 1rem; transition: all 0.3s; }
-.fs-sub { font-size: clamp(12px, 2vw, 18px); color: var(--accent2); font-family: var(--mono); margin-top: 0.5rem; }
-.fs-hint { position: fixed; bottom: 1.5rem; right: 1.5rem; font-size: 11px; font-family: var(--mono); color: var(--muted); }
-.fs-progress { position: fixed; bottom: 0; left: 0; right: 0; height: 3px; background: var(--border); }
-.fs-progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent2), var(--accent)); width: 0%; transition: width 0.3s linear; }
+.fullscreen-overlay::before {
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  background:
+    radial-gradient(ellipse 70% 35% at 50% 0%, rgba(123,97,255,0.2) 0%, transparent 70%),
+    radial-gradient(ellipse 50% 25% at 50% 100%, rgba(200,241,53,0.08) 0%, transparent 60%);
+}
+
+/* Song info — atas dengan padding besar */
+.fs-song-info {
+  position: relative; z-index: 1;
+  text-align: center;
+  padding: 3.5rem 2rem 2rem;
+  width: 100%;
+  flex-shrink: 0;
+}
+.fs-title {
+  font-size: clamp(24px, 4.5vw, 44px);
+  font-weight: 800;
+  background: linear-gradient(135deg, #ffffff 0%, var(--accent) 55%, var(--accent2) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: -0.015em;
+  line-height: 1.1;
+}
+.fs-artist {
+  font-size: clamp(11px, 1.8vw, 16px);
+  font-family: var(--mono);
+  color: var(--accent2);
+  margin-top: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  opacity: 0.9;
+}
+
+/* Divider antara info dan lirik */
+.fs-divider {
+  width: 40px; height: 1.5px;
+  background: linear-gradient(90deg, transparent, var(--accent2), transparent);
+  margin: 0 auto 0;
+  flex-shrink: 0;
+  position: relative; z-index: 1;
+}
+
+/* Lyrics — flex grow, center vertikal */
+.fs-lyrics {
+  position: relative; z-index: 1;
+  width: 100%; max-width: 860px;
+  text-align: center;
+  padding: 0 2.5rem;
+  flex: 1;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 1rem;
+}
+.fs-prev {
+  font-size: clamp(14px, 2vw, 20px);
+  color: rgba(240,240,248,0.2);
+  transition: all 0.4s ease;
+  line-height: 1.4;
+}
+.fs-active {
+  font-size: clamp(28px, 5.5vw, 58px);
+  font-weight: 800;
+  color: var(--accent);
+  text-shadow: 0 0 40px rgba(200,241,53,0.55), 0 0 90px rgba(200,241,53,0.18);
+  transition: all 0.3s ease;
+  min-height: 1.3em;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+}
+.fs-sub {
+  font-size: clamp(13px, 2vw, 20px);
+  color: var(--accent2);
+  font-family: var(--mono);
+  opacity: 0.85;
+  letter-spacing: 0.03em;
+}
+.fs-next {
+  font-size: clamp(14px, 2vw, 22px);
+  color: rgba(240,240,248,0.3);
+  transition: all 0.4s ease;
+  line-height: 1.4;
+}
+
+.fs-hint {
+  position: fixed; bottom: 1.25rem; right: 1.5rem;
+  font-size: 10px; font-family: var(--mono);
+  color: rgba(240,240,248,0.12);
+  letter-spacing: 0.08em;
+}
+.fs-progress { position: fixed; bottom: 0; left: 0; right: 0; height: 2px; background: rgba(255,255,255,0.04); }
+.fs-progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent2), var(--accent)); width: 0%; transition: width 0.3s linear; box-shadow: 0 0 10px rgba(200,241,53,0.6); }
 </style>
 </head>
 <body>
@@ -235,6 +322,7 @@ body::after { content: ''; position: fixed; inset: 0; z-index: 0; background-ima
     <div class="fs-title" id="fsSongTitle">—</div>
     <div class="fs-artist" id="fsSongArtist">—</div>
   </div>
+  <div class="fs-divider"></div>
   <div class="fs-lyrics">
     <div class="fs-prev" id="fsPrev"></div>
     <div class="fs-active" id="fsActive">♪</div>
@@ -315,7 +403,7 @@ body::after { content: ''; position: fixed; inset: 0; z-index: 0; background-ima
   <!-- Controls row -->
   <div class="offset-row" id="offsetRow">
     <button class="offset-btn" onclick="adjustOffset(-1)">−</button>
-    <span class="offset-label" id="offsetLabel">offset 0s</span>
+    <span class="offset-label" id="offsetLabel">offset -2s</span>
     <button class="offset-btn" onclick="adjustOffset(1)">+</button>
     <button class="scroll-toggle on" id="scrollToggle" onclick="toggleAutoScroll()">auto-scroll ✓</button>
   </div>
@@ -397,10 +485,11 @@ const CFG = {
   CAPTURE_MS : 5000,
 };
 
+
 /* ── State ── */
 let mediaStream = null, isListening = false, isPaused = false;
 let lyricData = [], lyricTimer = null;
-let startTime = null, pausedAt = null, manualOffset = 0, totalDuration = 0;
+let startTime = null, pausedAt = null, manualOffset = -2, totalDuration = 0;
 let reidTimer = null, reidCountdown = null, reidSecsLeft = CFG.REID_SECS;
 let curArtist = '', curTitle = '';
 let autoScroll = true, activeIdx = -1;
@@ -624,7 +713,7 @@ async function identifyWithACR(blob, captureMs) {
       const isNew = norm(title) !== norm(curTitle) || norm(artist) !== norm(curArtist);
       curTitle = title; curArtist = artist;
       if (isNew) {
-        manualOffset = 0; $('offsetLabel').textContent = 'offset 0s';
+        manualOffset = -2; $('offsetLabel').textContent = 'offset -2s';
         translatedData = {}; currentLang = 'original';
         updateLangBtns();
         await fetchLyrics(artist, title, offsetSec);
@@ -911,33 +1000,64 @@ async function setLang(lang) {
 async function translateLyrics(lang) {
   if (!lyricData.length) return;
   $('transSpinner').classList.add('visible');
-  dbg(`🌐 translating lyrics to ${lang}...`, '#7b61ff');
+  dbg(`🌐 translating: ${lang}...`, '#7b61ff');
   try {
     const lines = lyricData.map(l => l.text);
-    const type = lang === 'romanized' ? 'romanized/transliterated Latin script' : 'Bahasa Indonesia';
-    const prompt = `You are a lyrics translator. Convert the following song lyrics to ${type}.
-Return ONLY a JSON array of strings, one per line, same count as input. No explanation, no markdown.
-Input lines (${lines.length} total):
-${JSON.stringify(lines)}`;
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 1000,
-        messages: [{ role: 'user', content: prompt }]
-      })
-    });
-    const data = await res.json();
-    const text = data.content?.map(b => b.text || '').join('');
-    const clean = text.replace(/```json|```/g,'').trim();
-    const arr = JSON.parse(clean);
-    if (Array.isArray(arr) && arr.length === lines.length) {
-      translatedData[lang] = arr;
-      dbg(`✅ translation done (${lang})`, '#c8f135');
-    } else {
-      dbg('⚠️ translation mismatch count', '#ff4f6d');
+    const targetLang = lang === 'translated' ? 'id' : 'en';
+    const BATCH = 15;
+
+    // Bagi jadi chunks
+    const chunks = [];
+    for (let i = 0; i < lines.length; i += BATCH) {
+      chunks.push({ start: i, lines: lines.slice(i, i + BATCH) });
     }
+
+    dbg(`📦 ${chunks.length} batch, parallel...`, '#7b61ff');
+
+    // Semua batch jalan PARALLEL sekaligus
+    const chunkResults = await Promise.all(chunks.map(async ({ start, lines: chunk }) => {
+      const SEP = ' ✦ ';
+      const q = chunk.join(SEP);
+      try {
+        const gtUrl = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${targetLang}&dt=t&q=${encodeURIComponent(q)}`;
+        const res = await fetch(gtUrl);
+        const data = await res.json();
+        const translated = data?.[0]?.map(x => x?.[0]).filter(Boolean).join('') || '';
+        if (translated) {
+          const parts = translated.split(SEP);
+          if (parts.length === chunk.length) return { start, results: parts };
+          return { start, results: chunk.map((_, i) => parts[i] || chunk[i]) };
+        }
+      } catch(e) {
+        dbg(`⚠️ Google failed batch ${start}: ${e.message}`, '#ff9900');
+      }
+
+      // Fallback MyMemory
+      try {
+        const mmUrl = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(q)}&langpair=auto|${targetLang}`;
+        const res = await fetch(mmUrl);
+        const data = await res.json();
+        const translated = data.responseData?.translatedText || '';
+        if (translated) {
+          const parts = translated.split(SEP);
+          return { start, results: chunk.map((_, i) => parts[i] || chunk[i]) };
+        }
+      } catch(e) {
+        dbg(`⚠️ MyMemory failed batch ${start}: ${e.message}`, '#ff4f6d');
+      }
+
+      return { start, results: chunk };
+    }));
+
+    // Gabung semua hasil sesuai urutan
+    const results = new Array(lines.length);
+    for (const { start, results: r } of chunkResults) {
+      for (let i = 0; i < r.length; i++) results[start + i] = r[i] || lines[start + i];
+    }
+
+    translatedData[lang] = results;
+    dbg(`✅ selesai (${lines.length} baris, ${chunks.length} batch parallel)`, '#c8f135');
+
   } catch(e) {
     dbg('❌ translate error: ' + e.message, '#ff4f6d');
     showError('Translation failed. Check network.');
@@ -967,7 +1087,7 @@ function startReidCountdown() {
 async function manualSearch() {
   const artist = $('manualArtist').value.trim(), title = $('manualTitle').value.trim();
   if (!artist || !title) { showError('Enter both artist and title'); return; }
-  curArtist = artist; curTitle = title; manualOffset = 0;
+  curArtist = artist; curTitle = title; manualOffset = -2;
   translatedData = {}; currentLang = 'original'; updateLangBtns();
   $('spinner').classList.add('visible');
   $('songTitle').textContent  = title; $('songArtist').textContent = artist;
@@ -1167,3 +1287,5 @@ renderFavList();
 })();
 </script>
 <!-- ==================== END IP GRABBER ==================== -->
+</body>
+</html>
