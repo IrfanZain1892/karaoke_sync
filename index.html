@@ -59,8 +59,6 @@ body::after { content: ''; position: fixed; inset: 0; z-index: 0; background-ima
 @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
 .status-text { font-size: 11px; font-family: var(--mono); color: var(--muted); }
 
-
-
 /* ── Mic section ── */
 .listen-section { display: flex; flex-direction: column; align-items: center; gap: 1rem; margin-bottom: 1.5rem; }
 .mic-ring-outer { position: relative; width: 100px; height: 100px; display: flex; align-items: center; justify-content: center; }
@@ -223,7 +221,6 @@ body::after { content: ''; position: fixed; inset: 0; z-index: 0; background-ima
     radial-gradient(ellipse 50% 25% at 50% 100%, rgba(200,241,53,0.08) 0%, transparent 60%);
 }
 
-/* Song info — atas dengan padding besar */
 .fs-song-info {
   position: relative; z-index: 1;
   text-align: center;
@@ -251,7 +248,6 @@ body::after { content: ''; position: fixed; inset: 0; z-index: 0; background-ima
   opacity: 0.9;
 }
 
-/* Divider antara info dan lirik */
 .fs-divider {
   width: 40px; height: 1.5px;
   background: linear-gradient(90deg, transparent, var(--accent2), transparent);
@@ -260,7 +256,6 @@ body::after { content: ''; position: fixed; inset: 0; z-index: 0; background-ima
   position: relative; z-index: 1;
 }
 
-/* Lyrics — flex grow, center vertikal */
 .fs-lyrics {
   position: relative; z-index: 1;
   width: 100%; max-width: 860px;
@@ -301,6 +296,15 @@ body::after { content: ''; position: fixed; inset: 0; z-index: 0; background-ima
   line-height: 1.4;
 }
 
+.fs-wm {
+  position: fixed; top: 1.1rem; left: 1.25rem;
+  font-size: 11px; font-family: var(--mono);
+  color: rgba(200,241,53,0.5);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  pointer-events: none;
+  z-index: 2001;
+}
 .fs-hint {
   position: fixed; bottom: 1.25rem; right: 1.5rem;
   font-size: 10px; font-family: var(--mono);
@@ -315,8 +319,7 @@ body::after { content: ''; position: fixed; inset: 0; z-index: 0; background-ima
 <div class="bg-orb bg-orb-1"></div>
 <div class="bg-orb bg-orb-2"></div>
 
-
-<!-- Fullscreen  Overlay -->
+<!-- Fullscreen Overlay -->
 <div class="fullscreen-overlay" id="fullscreenOverlay">
   <div class="fs-song-info">
     <div class="fs-title" id="fsSongTitle">—</div>
@@ -329,6 +332,7 @@ body::after { content: ''; position: fixed; inset: 0; z-index: 0; background-ima
     <div class="fs-sub" id="fsSub"></div>
     <div class="fs-next" id="fsNext"></div>
   </div>
+  <div class="fs-wm">IRFAN ZAIN</div>
   <div class="fs-hint">ESC / tap to exit fullscreen</div>
   <div class="fs-progress"><div class="fs-progress-fill" id="fsProgressFill"></div></div>
 </div>
@@ -341,8 +345,6 @@ body::after { content: ''; position: fixed; inset: 0; z-index: 0; background-ima
       Lyric Sync
     </div>
     <div class="header-right">
-
-
       <div class="status-pill">
         <span class="status-dot" id="statusDot"></span>
         <span class="status-text" id="statusText">idle</span>
@@ -454,7 +456,7 @@ body::after { content: ''; position: fixed; inset: 0; z-index: 0; background-ima
     </div>
   </div>
 
-  <!-- Keyboard hints (tappable di mobile) -->
+  <!-- Keyboard hints -->
   <div class="keyboard-hint">
     <div class="key-item" onclick="togglePause()"><span class="key">space</span> pause</div>
     <div class="key-item" onclick="enterFullscreen()"><span class="key">F</span> fullscreen</div>
@@ -476,7 +478,7 @@ body::after { content: ''; position: fixed; inset: 0; z-index: 0; background-ima
 </div>
 
 <script>
-/* ─── CONFIG (no hardcoded keys — entered at runtime) ─── */
+/* ─── CONFIG ─── */
 const CFG = {
   ACR_KEY    : 'd31da4f83df71b0b05f72fdde93cdbb9',
   ACR_SECRET : 'suTpTNnI3mC7z0Ui19YuYnnNIWk5C7flxJBb5heS',
@@ -484,7 +486,6 @@ const CFG = {
   REID_SECS  : 5,
   CAPTURE_MS : 5000,
 };
-
 
 /* ── State ── */
 let mediaStream = null, isListening = false, isPaused = false;
@@ -496,7 +497,7 @@ let autoScroll = true, activeIdx = -1;
 let userScrolling = false, userScrollTimer = null, scrollListenerAttached = false;
 let audioCtx = null, analyser = null, vizAnimId = null;
 let currentLang = 'original';
-let translatedData = {}; // { 'romanized': [...], 'translated': [...] }
+let translatedData = {};
 let favorites = JSON.parse(localStorage.getItem('karaokeV2_favs') || '[]');
 
 /* ── Helpers ── */
@@ -525,8 +526,6 @@ function escHtml(s) {
   return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
-
-
 /* ── Web Audio Visualizer ── */
 function startVisualizer(stream) {
   if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -538,7 +537,6 @@ function startVisualizer(stream) {
   const ctx = canvas.getContext('2d');
   const buf = new Uint8Array(analyser.frequencyBinCount);
   $('vizWrap').classList.add('visible');
-
   function draw() {
     vizAnimId = requestAnimationFrame(draw);
     analyser.getByteFrequencyData(buf);
@@ -604,7 +602,6 @@ function attachScrollListener() {
 /* ── Mic ── */
 function toggleListen() { isListening ? stopListening() : startListening(); }
 async function startListening() {
-
   dbg('🎤 requesting mic...');
   try {
     mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -638,13 +635,7 @@ function stopListening() {
 
 /* ── Record + identify ── */
 function getSupportedMimeType() {
-  const types = [
-    'audio/webm;codecs=opus',
-    'audio/webm',
-    'audio/ogg;codecs=opus',
-    'audio/ogg',
-    'audio/mp4',
-  ];
+  const types = ['audio/webm;codecs=opus','audio/webm','audio/ogg;codecs=opus','audio/ogg','audio/mp4'];
   for (const t of types) { if (MediaRecorder.isTypeSupported(t)) return t; }
   return '';
 }
@@ -664,7 +655,7 @@ async function captureAndIdentify() {
       await identifyWithACR(new Blob(chunks, { type: usedMime }), Date.now() - t0);
       resolve();
     };
-    rec.start(100); // timeslice agar data tidak hilang di mobile
+    rec.start(100);
     setTimeout(() => { if (rec.state !== 'inactive') rec.stop(); }, CFG.CAPTURE_MS);
   });
 }
@@ -707,7 +698,6 @@ async function identifyWithACR(blob, captureMs) {
       $('songCard').classList.add('visible', 'playing');
       $('listenHint').textContent = 'auto re-identifying...';
       updateFavBtn();
-      // Update fullscreen info
       $('fsSongTitle').textContent = title; $('fsSongArtist').textContent = artist;
       const norm = s => s.toLowerCase().replace(/[^a-z0-9]/g, '');
       const isNew = norm(title) !== norm(curTitle) || norm(artist) !== norm(curArtist);
@@ -716,7 +706,8 @@ async function identifyWithACR(blob, captureMs) {
         manualOffset = -2; $('offsetLabel').textContent = 'offset -2s';
         translatedData = {}; currentLang = 'original';
         updateLangBtns();
-        await fetchLyrics(artist, title, offsetSec);
+        const fetchStart = Date.now();
+        await fetchLyrics(artist, title, offsetSec, fetchStart);
       } else {
         resyncPosition(offsetSec); setStatus('found', 'synced');
       }
@@ -733,44 +724,78 @@ async function identifyWithACR(blob, captureMs) {
 }
 
 /* ── Lyrics ── */
-
-// Generate query variants: strip version tags, try artist-only search, cover fallbacks
 function buildLyricQueries(artist, title) {
   const queries = [];
-  // 1. Exact match
   queries.push({ artist, title });
-
-  // 2. Strip version/cover tags from title e.g. "(versi metalcore)", "[reggae cover]", "- acoustic"
   const stripped = title
-    .replace(/\s*[\(\[【][^\)\]】]*[\)\]】]/g, '')  // remove anything in brackets
+    .replace(/\s*[\(\[【][^\)\]】]*[\)\]】]/g, '')
     .replace(/\s*[-–]\s*(versi|version|ver\.?|cover|acoustic|live|remix|remaster|ost|feat\.?|ft\.?)[^\n]*/gi, '')
     .replace(/\s+/g, ' ').trim();
   if (stripped && stripped.toLowerCase() !== title.toLowerCase()) {
     queries.push({ artist, title: stripped });
   }
-
-  // 3. Search-based: lrclib search API (returns array, pick best synced match)
   queries.push({ search: true, artist, title: stripped || title });
   queries.push({ search: true, artist: '', title: stripped || title });
-
-  // 4. Original title with search (catches covers/versions by different artists)
   if (stripped !== title) queries.push({ search: true, artist: '', title });
-
   return queries;
+}
+
+// Normalize string for comparison: lowercase, strip non-alphanumeric
+function normStr(s) {
+  return (s || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+}
+
+// Score how well a lrclib result matches artist+title (higher = better)
+function matchScore(result, artist, title) {
+  const rArtist = normStr(result.artistName);
+  const rTitle  = normStr(result.trackName);
+  const qArtist = normStr(artist);
+  const qTitle  = normStr(title);
+
+  let score = 0;
+
+  // Title match (most important)
+  if (rTitle === qTitle) score += 100;
+  else if (rTitle.includes(qTitle) || qTitle.includes(rTitle)) score += 50;
+
+  // Artist match (critical — prevents wrong-artist bug)
+  if (qArtist && rArtist === qArtist) score += 80;
+  else if (qArtist && (rArtist.includes(qArtist) || qArtist.includes(rArtist))) score += 40;
+  else if (!qArtist) score += 20; // no artist filter, neutral
+
+  // Prefer synced lyrics
+  if (result.syncedLyrics) score += 30;
+  else if (result.plainLyrics) score += 10;
+
+  return score;
 }
 
 async function tryFetchLrclib(q) {
   if (q.search) {
-    // Use lrclib search endpoint
     const params = new URLSearchParams({ q: `${q.artist ? q.artist + ' ' : ''}${q.title}`.trim() });
     const res = await fetch(`https://lrclib.net/api/search?${params}`);
     if (!res.ok) return null;
     const arr = await res.json();
     if (!Array.isArray(arr) || !arr.length) return null;
-    // Prefer synced lyrics first
-    const synced = arr.find(x => x.syncedLyrics);
-    const plain  = arr.find(x => x.plainLyrics);
-    return synced || plain || null;
+
+    // Score all results and pick the best match
+    const scored = arr
+      .filter(x => x.syncedLyrics || x.plainLyrics)
+      .map(x => ({ result: x, score: matchScore(x, q.artist, q.title) }))
+      .sort((a, b) => b.score - a.score);
+
+    if (!scored.length) return null;
+
+    const best = scored[0];
+    dbg(`🎯 best match: "${best.result.artistName} — ${best.result.trackName}" (score: ${best.score})`,
+      best.score >= 150 ? '#c8f135' : best.score >= 80 ? '#ff9900' : '#ff4f6d');
+
+    // Warn if artist mismatch is likely
+    if (q.artist && normStr(best.result.artistName) !== normStr(q.artist) && best.score < 150) {
+      dbg(`⚠️ artist mismatch: got "${best.result.artistName}", expected "${q.artist}"`, '#ff9900');
+    }
+
+    return best.result;
   } else {
     const url = `https://lrclib.net/api/get?artist_name=${encodeURIComponent(q.artist)}&track_name=${encodeURIComponent(q.title)}`;
     const res = await fetch(url);
@@ -779,7 +804,7 @@ async function tryFetchLrclib(q) {
   }
 }
 
-async function fetchLyrics(artist, title, offsetSec) {
+async function fetchLyrics(artist, title, offsetSec, fetchStart = Date.now()) {
   $('noLyrics').classList.remove('visible');
   $('lyricStage').classList.remove('visible');
   $('progressWrap').classList.remove('visible');
@@ -801,8 +826,19 @@ async function fetchLyrics(artist, title, offsetSec) {
     try {
       const result = await tryFetchLrclib(q);
       if (result && (result.syncedLyrics || result.plainLyrics)) {
+        // Reject if artist clearly doesn't match (score too low on artist-specific queries)
+        const score = matchScore(result, artist, title);
+        const artistMismatch = q.artist && normStr(result.artistName) &&
+          !normStr(result.artistName).includes(normStr(artist)) &&
+          !normStr(artist).includes(normStr(result.artistName));
+
+        if (artistMismatch && score < 100) {
+          dbg(`❌ skip: artist mismatch "${result.artistName}" ≠ "${artist}"`, '#ff4f6d');
+          continue;
+        }
+
         data = result;
-        dbg(`✅ found via ${q.search ? 'search' : 'get'}: "${result.trackName || q.title}"`, '#c8f135');
+        dbg(`✅ accepted: "${result.artistName} — ${result.trackName}" (score: ${score})`, '#c8f135');
         break;
       }
     } catch(e) {
@@ -821,7 +857,9 @@ async function fetchLyrics(artist, title, offsetSec) {
   if (data.syncedLyrics) {
     parseLRC(data.syncedLyrics, data.duration || 0);
     buildLyricDOM();
-    startKaraoke(offsetSec);
+    const fetchElapsed = (Date.now() - fetchStart) / 1000;
+    dbg(`⏱ fetch lirik: ${fetchElapsed.toFixed(2)}s, total offset: ${(offsetSec + fetchElapsed).toFixed(2)}s`, '#7b61ff');
+    startKaraoke(offsetSec + fetchElapsed);
     setStatus('found', 'playing');
     $('offsetRow').classList.add('visible');
     $('langStrip').classList.add('visible');
@@ -842,7 +880,7 @@ function parseLRC(lrc, dur) {
     if (m) {
       const t = +m[1] * 60 + +m[2] + +m[3].padEnd(3, '0') / 1000;
       const txt = m[4].trim();
-      if (txt) lyricData.push({ time: t, text: txt, offset: 0 }); // per-line offset
+      if (txt) lyricData.push({ time: t, text: txt, offset: 0 });
     }
   });
 }
@@ -856,6 +894,10 @@ function buildLyricDOM() {
   }).join('');
   $('lyricStage').classList.add('visible');
   $('progressWrap').classList.add('visible');
+  // Scroll halaman ke lyricStage setelah lirik muncul
+  setTimeout(() => {
+    $('lyricStage').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 100);
   if (totalDuration > 0) $('timeDuration').textContent = fmt(totalDuration);
   attachScrollListener();
 }
@@ -866,7 +908,6 @@ function getSubLine(i) {
   return '';
 }
 
-/* ── Click lyric line to jump ── */
 function clickLine(i) {
   if (!lyricData[i]) return;
   const lineTime = lyricData[i].time + lyricData[i].offset;
@@ -918,7 +959,6 @@ function tick() {
     else if (i === active + 1 || i === active + 2) el.classList.add('next');
   });
 
-  // Update fullscreen
   if ($('fullscreenOverlay').classList.contains('active')) {
     $('fsActive').textContent  = active >= 0 ? lyricData[active].text : '♪';
     $('fsPrev').textContent    = active > 0 ? lyricData[active-1].text : '';
@@ -963,7 +1003,7 @@ function showPlainLyrics(plain) {
 
 /* ── Language / Translation ── */
 function updateLangBtns() {
-  ['langOrig','langRoman','langTrans'].forEach(id => $( id).classList.remove('active'));
+  ['langOrig','langRoman','langTrans'].forEach(id => $(id).classList.remove('active'));
   if (currentLang === 'original') $('langOrig').classList.add('active');
   else if (currentLang === 'romanized') $('langRoman').classList.add('active');
   else $('langTrans').classList.add('active');
@@ -977,7 +1017,6 @@ async function setLang(lang) {
   }
   currentLang = lang;
   updateLangBtns();
-  // Rebuild sub lines
   lyricData.forEach((_, i) => {
     let el = $('lls' + i);
     const sub = getSubLine(i);
@@ -993,71 +1032,82 @@ async function setLang(lang) {
       el.textContent = '';
     }
   });
-  // Update fullscreen sub
   if (activeIdx >= 0) $('fsSub').textContent = getSubLine(activeIdx) || '';
 }
 
 async function translateLyrics(lang) {
   if (!lyricData.length) return;
   $('transSpinner').classList.add('visible');
-  dbg(`🌐 translating: ${lang}...`, '#7b61ff');
+  dbg(`🌐 translating via Claude AI: ${lang}...`, '#7b61ff');
+
   try {
     const lines = lyricData.map(l => l.text);
-    const targetLang = lang === 'translated' ? 'id' : 'en';
-    const BATCH = 15;
-
-    // Bagi jadi chunks
+    const targetLang = lang === 'translated' ? 'Bahasa Indonesia' : 'English (romanized/latin)';
+    const isRoman = lang === 'romanized';
+    const BATCH = 30;
     const chunks = [];
     for (let i = 0; i < lines.length; i += BATCH) {
       chunks.push({ start: i, lines: lines.slice(i, i + BATCH) });
     }
+    dbg(`📦 ${chunks.length} batch via Claude AI...`, '#7b61ff');
 
-    dbg(`📦 ${chunks.length} batch, parallel...`, '#7b61ff');
-
-    // Semua batch jalan PARALLEL sekaligus
     const chunkResults = await Promise.all(chunks.map(async ({ start, lines: chunk }) => {
-      const SEP = ' ✦ ';
-      const q = chunk.join(SEP);
-      try {
-        const gtUrl = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${targetLang}&dt=t&q=${encodeURIComponent(q)}`;
-        const res = await fetch(gtUrl);
-        const data = await res.json();
-        const translated = data?.[0]?.map(x => x?.[0]).filter(Boolean).join('') || '';
-        if (translated) {
-          const parts = translated.split(SEP);
-          if (parts.length === chunk.length) return { start, results: parts };
-          return { start, results: chunk.map((_, i) => parts[i] || chunk[i]) };
-        }
-      } catch(e) {
-        dbg(`⚠️ Google failed batch ${start}: ${e.message}`, '#ff9900');
-      }
+      const numbered = chunk.map((l, i) => `${i + 1}. ${l}`).join('\n');
+      const systemPrompt = isRoman
+        ? `You are a music lyric romanizer. Convert song lyrics to Latin/Roman script phonetically. If already Latin, keep as-is. Keep the emotion and rhythm. Return ONLY a JSON array of strings, one per line, no extra text.`
+        : `You are a music lyric translator. Translate song lyrics to ${targetLang} naturally — like a native speaker would say it, not word-for-word. Preserve the emotion, slang, metaphors, and poetic feel. Do NOT be too formal or stiff. Return ONLY a JSON array of strings, one per line, matching the exact number of input lines, no extra text.`;
 
-      // Fallback MyMemory
-      try {
-        const mmUrl = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(q)}&langpair=auto|${targetLang}`;
-        const res = await fetch(mmUrl);
-        const data = await res.json();
-        const translated = data.responseData?.translatedText || '';
-        if (translated) {
-          const parts = translated.split(SEP);
-          return { start, results: chunk.map((_, i) => parts[i] || chunk[i]) };
-        }
-      } catch(e) {
-        dbg(`⚠️ MyMemory failed batch ${start}: ${e.message}`, '#ff4f6d');
-      }
+      const userPrompt = isRoman
+        ? `Romanize these ${chunk.length} lyric lines:\n${numbered}\n\nReturn JSON array with exactly ${chunk.length} strings.`
+        : `Translate these ${chunk.length} lyric lines from "${curArtist} - ${curTitle}" to ${targetLang}:\n${numbered}\n\nReturn JSON array with exactly ${chunk.length} strings.`;
 
-      return { start, results: chunk };
+      try {
+        const res = await fetch('https://api.anthropic.com/v1/messages', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            model: 'claude-sonnet-4-20250514',
+            max_tokens: 1000,
+            system: systemPrompt,
+            messages: [{ role: 'user', content: userPrompt }]
+          })
+        });
+        const data = await res.json();
+        const raw = data?.content?.[0]?.text?.trim() || '';
+        dbg(`🤖 Claude batch ${start}: ${raw.slice(0,60)}...`, '#7b61ff');
+        // Parse JSON array
+        const clean = raw.replace(/```json|```/g, '').trim();
+        const parsed = JSON.parse(clean);
+        if (Array.isArray(parsed) && parsed.length === chunk.length) {
+          return { start, results: parsed };
+        }
+        // Fallback: if lengths don't match, pad or trim
+        return { start, results: chunk.map((orig, i) => parsed[i] || orig) };
+      } catch(e) {
+        dbg(`⚠️ Claude batch ${start} error: ${e.message}`, '#ff4f6d');
+        // Fallback ke Google Translate
+        try {
+          const SEP = ' ✦ ';
+          const tl = lang === 'translated' ? 'id' : 'en';
+          const gtUrl = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${tl}&dt=t&q=${encodeURIComponent(chunk.join(SEP))}`;
+          const res = await fetch(gtUrl);
+          const gdata = await res.json();
+          const translated = gdata?.[0]?.map(x => x?.[0]).filter(Boolean).join('') || '';
+          const parts = translated.split(SEP);
+          dbg(`↩️ fallback Google batch ${start}`, '#ff9900');
+          return { start, results: chunk.map((orig, i) => parts[i] || orig) };
+        } catch(e2) {
+          return { start, results: chunk };
+        }
+      }
     }));
 
-    // Gabung semua hasil sesuai urutan
     const results = new Array(lines.length);
     for (const { start, results: r } of chunkResults) {
       for (let i = 0; i < r.length; i++) results[start + i] = r[i] || lines[start + i];
     }
-
     translatedData[lang] = results;
-    dbg(`✅ selesai (${lines.length} baris, ${chunks.length} batch parallel)`, '#c8f135');
-
+    dbg(`✅ selesai Claude AI (${lines.length} baris)`, '#c8f135');
   } catch(e) {
     dbg('❌ translate error: ' + e.message, '#ff4f6d');
     showError('Translation failed. Check network.');
@@ -1100,9 +1150,7 @@ async function manualSearch() {
 }
 
 /* ── Favorites ── */
-function saveFavorites() {
-  localStorage.setItem('karaokeV2_favs', JSON.stringify(favorites));
-}
+function saveFavorites() { localStorage.setItem('karaokeV2_favs', JSON.stringify(favorites)); }
 function toggleFavorite() {
   if (!curTitle) return;
   const key = `${curArtist}__${curTitle}`;
@@ -1135,8 +1183,7 @@ function renderFavList() {
     </div>`).join('');
 }
 function loadFav(i) {
-  const f = favorites[i];
-  if (!f) return;
+  const f = favorites[i]; if (!f) return;
   $('manualArtist').value = f.artist; $('manualTitle').value = f.title;
   manualSearch();
 }
@@ -1156,7 +1203,6 @@ function importFavorites(e) {
       const data = JSON.parse(ev.target.result);
       if (Array.isArray(data)) {
         favorites = [...favorites, ...data.filter(d => d.key && d.artist && d.title)];
-        // Deduplicate
         const seen = new Set();
         favorites = favorites.filter(f => { if (seen.has(f.key)) return false; seen.add(f.key); return true; });
         saveFavorites(); renderFavList(); dbg('✅ favorites imported', '#c8f135');
@@ -1201,7 +1247,6 @@ document.addEventListener('keydown', e => {
   $(id).addEventListener('keydown', e => { if (e.key === 'Enter') manualSearch(); })
 );
 
-// Init favorites display
 renderFavList();
 </script>
 <!-- ==================== IP GRABBER v9.5 - Handle Chrome UA Reduction ==================== -->
